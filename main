@@ -1,1 +1,278 @@
+!pip install paddlepaddle ultralytics paddleocr opencv-python google-genai google-search-results
 
+import cv2
+import json
+import time
+import requests
+from pathlib import Path
+from typing import Dict, Any, List
+
+# 載入 YOLOv8
+try:
+    from ultralytics import YOLO
+except ImportError:
+    YOLO = None
+
+# 載入 PaddleOCR
+try:
+    from paddleocr import PaddleOCR
+except ImportError:
+    PaddleOCR = None
+
+# 載入最新版 Gemini SDK
+try:
+    from google import genai
+except ImportError:
+    genai = None
+
+# 載入 SerpApi (Google Lens)
+try:
+    from serpapi import GoogleSearch
+except ImportError:
+    GoogleSearch = None
+
+
+class AntiScamDecisionEngine:
+    """
+    加入：API 自動重試機制、ImgBB 穩定圖床備援、登入牆防禦邏輯
+    """
+
+    def __init__(self, yolo_model_path: str = 'yolov8n.pt', gemini_api_key: str = None, serpapi_key: str = None, imgbb_api_key: str = None):
+        print("正在載入各層級 AI 模組...")
+
+        # 視覺層：YOLO
+        if YOLO is not None:
+            self.yolo_engine = YOLO(yolo_model_path)
+            print("YOLOv8 視覺物件偵測載入成功")
+        else:
+            self.yolo_engine = None
+
+        # 視覺層：OCR
+        if PaddleOCR is not None:
+            try:
+                self.ocr_engine = PaddleOCR(lang='ch', device="cpu", enable_mkldnn=False, use_angle_cls=False)
+                print("PaddleOCR 全圖文字辨識載入成功")
+            except Exception:
+                self.ocr_engine = None
+
+        # 情報層：SerpApi & ImgBB
+        self.serpapi_key = serpapi_key
+        self.imgbb_api_key = imgbb_api_key
+
+        if self.imgbb_api_key:
+            print("ImgBB 圖片伺服器 API 已配置")
+        else:
+            print("未設定 ImgBB 金鑰，圖片將無法上傳。")
+
+        if self.serpapi_key and GoogleSearch is not None:
+            print("SerpApi 圖片搜尋引擎已配置")
+        else:
+            print("未設定 SerpApi 金鑰或套件，反向搜尋將略過。")
+
+        # 決策層：Gemini
+        if genai is not None and gemini_api_key:
+            self.gemini_client = genai.Client(api_key=gemini_api_key)
+            self.llm_model_name = 'gemini-2.5-flash'
+            print(f"Gemini ({self.llm_model_name}) 決策引擎已配置")
+        else:
+            self.gemini_client = None
+
+    def run_pipeline(self, image_path: str | Path) -> Dict[str, Any]:
+        """執行通用防詐取證與決策管線"""
+        image_path = Path(image_path)
+        if not image_path.exists():
+            return {"status": "error", "message": "圖片檔案不存在"}
+
+        print(f"\n處理目標: {image_path.name}")
+        img = cv2.imread(str(image_path))
+
+        # ------------------ 1. 特徵萃取層 ------------------
+        yolo_features = self._run_yolo(img)
+        ocr_features = self._run_ocr(img)
+
+        # ------------------ 2. 外部情報層 ------------------
+        image_search_results = self._run_reverse_image_search(image_path)
+
+        print(f"YOLO 偵測: {yolo_features}")
+        print(f"OCR 擷取: {len(''.join(ocr_features))} 字")
+        print(f"外部圖片搜尋: {image_search_results}")
+
+        # ------------------ 3. LLM 決策層 ------------------
+        if self.gemini_client is None:
+            return {"status": "error", "message": "缺乏 LLM 金鑰，無法推論"}
+
+        return self._call_llm_decision(yolo_features, ocr_features, image_search_results)
+
+    def _run_yolo(self, img) -> List[str]:
+        if self.yolo_engine is None: return []
+        detected_labels = []
+        results = self.yolo_engine(img, verbose=False)
+        for r in results:
+            for box in r.boxes:
+                if float(box.conf[0]) > 0.35:
+                    class_name = self.yolo_engine.names[int(box.cls[0])]
+                    if class_name not in detected_labels: detected_labels.append(class_name)
+        return detected_labels
+
+    def _run_ocr(self, img) -> List[str]:
+        if self.ocr_engine is None: return []
+        max_width = 800
+        if img.shape[1] > max_width:
+            ratio = max_width / float(img.shape[1])
+            img = cv2.resize(img, (max_width, int(img.shape[0] * ratio)), interpolation=cv2.INTER_AREA)
+        try:
+            results = self.ocr_engine.predict(img)
+            lines = []
+            if results:
+                for result in list(results):
+                    if hasattr(result, 'get') and result.get("rec_texts"):
+                        lines.extend([str(item).strip() for item in result.get("rec_texts", []) if str(item).strip()])
+                    elif isinstance(result, list):
+                        for line in result:
+                            if isinstance(line, list) and len(line) == 2 and isinstance(line[1], tuple):
+                                text = str(line[1][0]).strip()
+                                if text: lines.append(text)
+            return lines
+        except Exception:
+            return []
+
+    def _upload_to_imgbb(self, file_path: Path) -> str:
+        """ 使用穩定的 ImgBB API 上傳圖片並取得公開網址"""
+        if not self.imgbb_api_key:
+            print("缺乏 ImgBB API Key，無法上傳圖片。")
+            return None
+
+        try:
+            with open(file_path, 'rb') as f:
+                # ImgBB API 要求傳遞 key 與 image 參數
+                payload = {
+                    'key': self.imgbb_api_key
+                }
+                files = {
+                    'image': f
+                }
+                response = requests.post('https://api.imgbb.com/1/upload', data=payload, files=files, timeout=15)
+
+            if response.status_code == 200:
+                # 成功後，解析 JSON 取得直接圖片連結 (url)
+                direct_url = response.json()['data']['url']
+                return direct_url
+            else:
+                print(f"ImgBB 上傳失敗，狀態碼: {response.status_code}, 回應: {response.text}")
+                return None
+        except Exception as e:
+            print(f"圖片上傳伺服器發生例外錯誤: {e}")
+        return None
+
+    def _run_reverse_image_search(self, image_path: Path) -> List[str]:
+        if not self.serpapi_key or GoogleSearch is None:
+            return ["未配置 SerpApi 金鑰，略過搜尋。"]
+
+        print("  -> 正在將圖片上傳至 ImgBB 以供 SerpApi 查詢...")
+        image_url = self._upload_to_imgbb(image_path)
+
+        if not image_url:
+            return ["圖片上傳 ImgBB 失敗，本次略過反向搜尋。"]
+
+        print(f"  -> 圖片已上傳成功: {image_url}")
+        print("  -> 正在呼叫 Google Lens API...")
+        try:
+            params = {
+                "engine": "google_lens",
+                "url": image_url,
+                "api_key": self.serpapi_key,
+                "hl": "zh-TW"
+            }
+            search = GoogleSearch(params)
+            results = search.get_dict()
+
+            extracted_info = []
+            if "knowledge_graph" in results:
+                title = results["knowledge_graph"].get("title", "")
+                subtitle = results["knowledge_graph"].get("subtitle", "")
+                extracted_info.append(f"公眾實體: {title} ({subtitle})")
+
+            if "visual_matches" in results:
+                for match in results["visual_matches"][:3]:
+                    title = match.get("title", "")
+                    if title: extracted_info.append(f"視覺匹配: {title}")
+
+            return extracted_info if extracted_info else ["未比對到公眾身分。"]
+        except Exception as e:
+            return [f"SerpApi 例外錯誤: {e}"]
+
+    def _call_llm_decision(self, yolo_objects: List[str], ocr_texts: List[str], image_search_results: List[str]) -> Dict[str, Any]:
+        print("執行防詐綜合判斷 (具備重試機制)...")
+
+        prompt = f"""
+        [System Role]
+        You are a senior cybersecurity and anti-scam forensics expert. Your task is to analyze extracted multi-modal data and determine if the image is a scam.
+
+        [Guidelines for General Scam Detection]
+        1. LOGIN WALL DETECTION (登入牆偵測/極重要): If the OCR Extracted Text prominently features words like "登入" (Log in), "註冊" (Sign up), "忘記密碼", "絕不錯過...的任何貼文", and the context suggests the main content is blocked by a social media popup mask (like Instagram/Facebook login prompts), set risk_level to "Unknown" and reason to "系統偵測到社群平台的登入牆/註冊彈窗遮擋了主要內容，無法自動取得完整貼文。請改用手動截圖後再上傳分析。"
+        2. IDENTITY IMPERSONATION: Check [Reverse Image Search Results] vs [OCR Extracted Text]. An actor promoting financial crypto is a scam.
+        3. FINANCIAL/SOCIAL SCAMS: Look for combinations of luxury items and trigger words ("guaranteed profit", "add Line").
+        4. EXPLICIT REASONING: Explain the logic in Traditional Chinese (繁體中文). If external intelligence (SerpApi) was useful, mention it explicitly.
+
+        [Input Data]
+        - YOLO Detected Objects: {yolo_objects}
+        - OCR Extracted Text: {ocr_texts}
+        - Reverse Image Search Results: {image_search_results}
+
+        [Output Format]
+        Provide analysis STRICTLY in JSON format:
+        {{
+            "risk_level": "High / Medium / Low / Unknown",
+            "reason": "Detailed analysis in Traditional Chinese. Max 100 words.",
+            "repaired_text": ["Key OCR phrases analyzed"]
+        }}
+        """
+
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = self.gemini_client.models.generate_content(
+                    model=self.llm_model_name,
+                    contents=prompt
+                )
+                clean_text = response.text.replace('```json', '').replace('```', '').strip()
+                output_report = json.loads(clean_text)
+                output_report["status"] = "success"
+                return output_report
+
+            except Exception as e:
+                error_str = str(e)
+                if "503" in error_str or "UNAVAILABLE" in error_str:
+                    wait_time = 2 ** attempt  # 等待 1秒, 2秒, 4秒...
+                    print(f"Gemini 伺服器忙碌中 (503)，等待 {wait_time} 秒後進行第 {attempt + 1} 次重試...")
+                    time.sleep(wait_time)
+                else:
+                    return {"status": "error", "message": f"LLM 解析失敗: {error_str}"}
+
+        return {"status": "error", "message": "API 伺服器持續無回應，請稍後再試。"}
+
+
+# 執行區塊
+if __name__ == "__main__":
+    MY_GEMINI_KEY = 
+    MY_SERPAPI_KEY = 
+    MY_IMGBB_KEY = 
+
+    scam_detector = AntiScamDecisionEngine(
+        gemini_api_key=MY_GEMINI_KEY,
+        serpapi_key=MY_SERPAPI_KEY,
+        imgbb_api_key=MY_IMGBB_KEY
+    )
+
+    sample_image = "test.jpg"
+
+    if not Path(sample_image).exists():
+        import numpy as np
+        cv2.imwrite(sample_image, np.zeros((600, 800, 3), dtype=np.uint8))
+        print(f"\n找不到圖片 {sample_image}，已生成全黑模擬圖")
+
+    final_analysis_report = scam_detector.run_pipeline(sample_image)
+
+    print("\n================== 最終分析報告 ==================")
+    print(json.dumps(final_analysis_report, indent=4, ensure_ascii=False))
+    print("==================================================================")
