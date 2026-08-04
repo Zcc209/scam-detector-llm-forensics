@@ -1,8 +1,3 @@
-"""A 同學影像分析模組的可重用命令列版本。
-
-API 金鑰只從環境變數讀取，不應寫入原始碼。
-"""
-
 from __future__ import annotations
 
 import argparse
