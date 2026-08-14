@@ -2,7 +2,7 @@
 
 本專案接受「圖片」或「網址」作為輸入，整合 Playwright、YOLOv8、PaddleOCR、SerpApi、ImgBB 與 Gemini，產生結構化防詐分析報告。
 
-目前 URL 特徵評分屬於其他模組，暫未納入此版本。網址輸入的流程是：
+網址輸入的流程是：
 
 ```text
 網址 -> Playwright 開啟頁面與截圖 -> YOLO/OCR/反向圖片搜尋 -> Gemini 判斷 -> JSON/Markdown 報告
