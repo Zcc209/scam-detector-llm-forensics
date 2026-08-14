@@ -43,6 +43,14 @@ Antifraud/
    └─ reportWriter.js            # Markdown 報告
 ```
 
+## 原始 OCR／YOLO 程式
+
+專案最初的 OCR 與 YOLO 程式保留在 [`main`](./main) 檔案，對應的原始 commit 為：
+
+- [原本程式碼(OCR Yolo)](https://github.com/Zcc209/Antifraud/commit/ad2abf9e4a3989730aa96272f07af106fb0f345d)
+
+目前整合版以 `main.js` 作為流程入口，並由 `image_analyzer.py` 接續與改良原始影像分析邏輯；原始 `main` 檔案仍保留供版本追蹤與比對。
+
 ## 1. 下載專案
 
 ```powershell
