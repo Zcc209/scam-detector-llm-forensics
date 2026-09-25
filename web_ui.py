@@ -52,7 +52,10 @@ def show_run_status(process, stderr_str):
         result = json.loads(report_path.read_text(encoding="utf-8"))
         status = result.get("status")
         if status == "success" and process.returncode == 0:
-            st.success("分析完成。")
+            if (result.get("assessment") or {}).get("risk_level") == "Unknown":
+                st.warning("流程已完成，但證據不足，風險維持 Unknown。")
+            else:
+                st.success("分析完成。")
         elif status == "blocked":
             st.error("網址遭攔截，未進行頁面分析。")
         elif status == "unusable":
@@ -165,7 +168,7 @@ if report_path.exists():
 
         status = report_data.get("status", "unknown")
         if status == "success":
-            st.info("🟢 系統狀態：分析成功")
+            st.info("流程完成；請以風險等級與證據依據解讀結果。")
         elif status == "blocked":
             st.error("🔴 系統狀態：高風險，已攔截 (Blocked)")
         elif status == "unusable":
@@ -193,16 +196,21 @@ if report_path.exists():
                 st.write("無圖片資料。")
 
         with col2:
-            st.markdown("#### 📈 AI 推論效能圖表")
-            # 優先採用 report.json 中記錄的 chart_path，若無則回退至預設 chart_path
-            target_chart_path = chart_path
-            if report_data.get("chart_path") and Path(report_data["chart_path"]).exists():
-                target_chart_path = Path(report_data["chart_path"])
-
-            if target_chart_path.exists():
-                st.image(Image.open(target_chart_path), caption="信心度與延遲分析", use_container_width=True)
-            else:
-                st.warning("⚠️ 未產生圖表。")
+            st.markdown("#### 判斷依據")
+            st.write("引用證據：", ", ".join(assessment.get("evidence_refs") or []) or "無")
+            st.caption("模型 softmax 尚未校準；本系統不顯示合成的詐騙機率。")
+            evidence = report_data.get("evidence") or {}
+            for domain_record in evidence.get("domains") or []:
+                item = domain_record["analysis"]
+                st.write(f"{domain_record['id']}: {item.get('normalized_url')}，網域風險 {item.get('risk_level')}")
+            dom = evidence.get("dom") or {}
+            ocr = evidence.get("screenshot_ocr") or {}
+            if dom:
+                st.write("DOM 文字模型：", (dom.get("model") or {}).get("prediction", "Unknown"))
+            if ocr:
+                st.write("截圖 OCR 模型：", (ocr.get("model") or {}).get("prediction", "Unknown"))
+            if (report_data.get("content_analysis") or {}).get("basis") == "modality_conflict":
+                st.warning("DOM 與 OCR 結果衝突，暫不給定風險等級。")
 
         with st.expander("📑 查看完整 JSON 報告細節"):
             st.json(report_data)

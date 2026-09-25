@@ -48,6 +48,7 @@ class ScamDetectionPipeline:
             print("  🎨 [影像前處理] 偵測到深色背景 (Dark Mode)，已自動進行色彩反轉 (Inversion) 以提升 OCR 辨識率")
 
         extracted_texts = []
+        ocr_items = []
         try:
             results = self.reader.readtext(img, mag_ratio=2.5, contrast_ths=0.1, adjust_contrast=0.5)
             if results:
@@ -71,22 +72,25 @@ class ScamDetectionPipeline:
                 ]
 
                 for bbox, text, prob in results:
-                    has_digits = any(char.isdigit() for char in text)
-                    has_symbol = any(sym in text for sym in ["$", "＄", "¥", "%", "％"])
                     has_scam_keyword = any(keyword in text for keyword in scam_keywords)
-
-                    if prob >= dynamic_threshold or has_digits or has_symbol or has_scam_keyword:
+                    accepted = bool(prob >= max(dynamic_threshold, 0.30) or (prob >= 0.15 and has_scam_keyword))
+                    ocr_items.append({"text": text, "confidence": round(float(prob), 3), "accepted": accepted})
+                    if accepted:
                         extracted_texts.append(text)
-                        print(f"  ✅ [保留] '{text}' (信心度: {prob:.2f} | 觸發保護: 數字={has_digits}, 符號={has_symbol}, 關鍵字={has_scam_keyword})")
+                        print(f"  ✅ [保留] '{text}' (OCR 信心度: {prob:.2f})")
                     else:
-                        print(f"  🗑️ [剔除] '{text}' (信心度: {prob:.2f} < 門檻 {dynamic_threshold:.2f})")
+                        print(f"  🗑️ [剔除] '{text}' (OCR 信心度: {prob:.2f}，品質不足)")
 
         except Exception as e:
             return {"status": "OCR_ERROR", "prediction": "Unknown", "message": str(e)}
 
         combined_ocr_text = "\n".join(extracted_texts)
         if not combined_ocr_text.strip():
-            return {"status": "SKIPPED_OCR_EMPTY", "prediction": "Unknown", "ocr_texts": []}
+            return {"status": "SKIPPED_OCR_EMPTY", "prediction": "Unknown", "ocr_texts": [], "ocr_items": ocr_items}
+        if len(extracted_texts) < 2 or sum(char.isalnum() for char in combined_ocr_text) < 20:
+            return {"status": "SKIPPED_OCR_LOW_QUALITY", "prediction": "Unknown",
+                    "ocr_texts": extracted_texts, "ocr_items": ocr_items,
+                    "message": "Too little high-confidence OCR text for content inference"}
 
         print(f"-> 最終合併辨識文字: '{combined_ocr_text}'")
         print("[2/2] 正在將文字送入 MacBERT 模型進行防詐推論...")
@@ -99,6 +103,8 @@ class ScamDetectionPipeline:
 
         result['latency_ms'] = latency_ms
         result['ocr_texts'] = extracted_texts
+        result['ocr_items'] = ocr_items
+        result['input_source'] = 'screenshot_ocr'
         result.setdefault('status', 'SUCCESS')
 
         return result
@@ -114,7 +120,8 @@ class ScamDetectionPipeline:
         result['rule_signals'] = self._rule_signals(text)
 
         result['latency_ms'] = latency_ms
-        result['ocr_texts'] = ["(系統優化：直接從網頁擷取純文字，已跳過 OCR)"]
+        result['ocr_texts'] = []
+        result['input_source'] = 'dom'
         result.setdefault('status', 'SUCCESS')
 
         return result
@@ -135,12 +142,7 @@ class ScamDetectionPipeline:
             fraud_conf *= 100
 
         if norm_conf == 0.0 and fraud_conf == 0.0:
-            conf = float(result.get('confidence', 0.85))
-            conf = conf * 100 if conf <= 1.0 else conf
-            if 'fraud' in str(prediction).lower() or '詐騙' in str(prediction):
-                fraud_conf, norm_conf = conf, max(0.0, 100.0 - conf)
-            else:
-                norm_conf, fraud_conf = conf, max(0.0, 100.0 - conf)
+            raise ValueError('No model probabilities available for chart')
 
         scores = {
             'Normal (正常)': norm_conf,
@@ -170,8 +172,8 @@ class ScamDetectionPipeline:
         bars = ax.barh(labels, values, color=colors, height=0.5)
 
         ax.set_xlim(0, 100)
-        ax.set_xlabel('信心度 Confidence (%)', fontsize=10)
-        ax.set_title('各類別信心度分佈', fontsize=11, fontweight='bold')
+        ax.set_xlabel('未校準模型 softmax (%)', fontsize=10)
+        ax.set_title('各類別原始模型分數（非詐騙機率）', fontsize=11, fontweight='bold')
         ax.grid(axis='x', linestyle='--', alpha=0.6)
         ax.set_axisbelow(True)
 

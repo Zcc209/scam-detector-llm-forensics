@@ -8,46 +8,13 @@ import sys
 import uuid
 
 from domain_check import analyze_url
+from evidence import domain_records
+from fusion import fuse
 from risk_assessment import assess
 
 
 def domain_assessment(initial, browser=None):
     return assess(initial, browser)
-
-
-def fallback_plot(result: dict, save_path: str):
-    """當 pipeline 內建繪圖模組突發異常時的備援繪圖機制"""
-    try:
-        import matplotlib.pyplot as plt
-        plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'SimHei', 'sans-serif']
-        plt.rcParams['axes.unicode_minus'] = False
-
-        pred = result.get("prediction", "Unknown")
-        conf = float(result.get("confidence", 0.85))
-        if conf <= 1.0:
-            conf *= 100
-
-        labels = ["詐騙風險 (Scam)", "正常內容 (Normal)"]
-        is_fraud = "fraud" in str(pred).lower() or "詐騙" in str(pred)
-        scores = [conf, max(0.0, 100.0 - conf)] if is_fraud else [max(0.0, 100.0 - conf), conf]
-        colors = ["#e74c3c", "#27ae60"]
-
-        fig, ax = plt.subplots(figsize=(6.5, 3.2), dpi=150)
-        bars = ax.barh(labels, scores, color=colors, height=0.5)
-        ax.set_xlim(0, 100)
-        ax.set_xlabel("信心度 (%)", fontsize=10)
-        ax.set_title(f"AI 檢測判定結果: {pred}", fontsize=11, weight="bold")
-
-        for bar in bars:
-            w = bar.get_width()
-            ax.text(w + 1.5, bar.get_y() + bar.get_height() / 2, f"{w:.1f}%",
-                    va="center", ha="left", fontsize=10, weight="bold")
-
-        plt.tight_layout()
-        plt.savefig(save_path)
-        plt.close()
-    except Exception as e:
-        sys.stderr.write(f"[Chart Error] 備援圖表產出亦失敗: {e}\n")
 
 
 def main():
@@ -78,6 +45,8 @@ def main():
         "domain_analysis": None,
         "browser_capture": None,
         "image_analysis": None,
+        "content_analysis": None,
+        "evidence": {"domains": [], "dom": None, "screenshot_ocr": None},
         "assessment": {
             "risk_level": "Unknown",
             "content_prediction": "Unknown",
@@ -91,6 +60,7 @@ def main():
         if args.url:
             domain = report["domain_analysis"] = analyze_url(args.url)
             report["assessment"] = assess(domain)
+            report["evidence"]["domains"] = domain_records(domain)
 
             if not domain["capture_allowed"]:
                 report["status"] = "blocked"
@@ -111,6 +81,7 @@ def main():
                     storage_state=args.storage_state,
                     channel=args.channel,
                 )
+                report["evidence"]["domains"] = domain_records(domain, report["browser_capture"])
                 report["assessment"] = assess(domain, report["browser_capture"])
 
                 if report["browser_capture"].get("status") == "blocked":
@@ -145,30 +116,26 @@ def main():
                 from integrated_app import ScamDetectionPipeline
                 pipeline = ScamDetectionPipeline(str(args.model_path.resolve()))
 
-                # 先確認 browser_capture 存在，再獲取純文字
                 browser_data = report.get("browser_capture")
                 page_text = browser_data.get("page_text") if browser_data else None
-
-                if page_text:
-                    result = pipeline.process_text(page_text)
-                else:
-                    result = pipeline.process_image(str(image.resolve()))
-
-                report["image_analysis"] = result
+                dom_result = pipeline.process_text(page_text) if page_text else None
+                ocr_result = pipeline.process_image(str(image.resolve()))
+                report["image_analysis"] = ocr_result
+                report["evidence"]["dom"] = ({"id": "content:dom", "text": page_text, "model": dom_result}
+                                             if page_text else None)
+                report["evidence"]["screenshot_ocr"] = {
+                    "id": "content:screenshot_ocr",
+                    "screenshot_path": str(image.resolve()),
+                    "texts": ocr_result.get("ocr_texts", []),
+                    "items": ocr_result.get("ocr_items", []),
+                    "model": ocr_result,
+                }
+                result = fuse(dom_result, ocr_result)
+                report["content_analysis"] = result
                 report["assessment"] = assess(report["domain_analysis"], report["browser_capture"], result)
 
-                status_str = str(result.get("status", "")).upper()
-                if status_str in ["SUCCESS", "OK"] and result.get("prediction") in ("Fraud", "Normal"):
+                if result["prediction"] in ("Fraud", "Normal"):
                     report["status"] = "success"
-                    report["assessment"]["content_prediction"] = result.get("prediction", "Unknown")
-                    chart = out / "inference_result_chart.png"
-                    try:
-                        pipeline.plot_inference_result(result, str(chart))
-                    except Exception as chart_err:
-                        sys.stderr.write(f"[Chart Error] chart failed, using fallback: {chart_err}\n")
-                        fallback_plot(result, str(chart))
-                    if chart.is_file():
-                        report["chart_path"] = str(chart.resolve())
                 else:
                     code = 2
                     report["status"] = "incomplete"

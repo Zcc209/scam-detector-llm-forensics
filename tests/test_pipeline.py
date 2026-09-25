@@ -1,5 +1,7 @@
 import ast
 import asyncio
+from contextlib import redirect_stdout
+import io
 import json
 from pathlib import Path
 import subprocess
@@ -36,6 +38,16 @@ class OCRGuardTests(unittest.TestCase):
         pipeline = self.pipeline()
         pipeline.reader.readtext.side_effect = RuntimeError('OCR unavailable')
         self.assertEqual(pipeline.process_image('test.png')['status'], 'OCR_ERROR')
+        pipeline.detector.predict.assert_not_called()
+
+    def test_short_ocr_does_not_predict(self):
+        import numpy as np
+        pipeline = self.pipeline()
+        pipeline.reader.readtext.return_value = [([], '保證獲利', np.float32(0.9))]
+        with redirect_stdout(io.StringIO()):
+            result = pipeline.process_image('test.png')
+        self.assertEqual(result['status'], 'SKIPPED_OCR_LOW_QUALITY')
+        json.dumps(result)
         pipeline.detector.predict.assert_not_called()
 
 

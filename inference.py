@@ -173,6 +173,8 @@ class FraudDetector:
                 "cleaned_text": "",
                 "num_chunks": 0,
                 "status": "SKIPPED_OCR_EMPTY",
+                "confidence_type": "uncalibrated_softmax",
+                "calibrated": False,
             }
 
         document_logits, num_chunks = self._predict_logits(cleaned_text)
@@ -198,6 +200,8 @@ class FraudDetector:
             "cleaned_text": cleaned_text,
             "num_chunks": num_chunks,
             "status": "SUCCESS",
+            "confidence_type": "uncalibrated_softmax",
+            "calibrated": False,
         }
 
 
