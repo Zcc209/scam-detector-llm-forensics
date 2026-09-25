@@ -1,5 +1,41 @@
-.env
+# 虛擬環境（包含 .venv 與 venv）
+.venv/
+.venv312/
+venv/
+ENV/
+
+# Python 快取與編譯暫存檔
 __pycache__/
-*.pyc
-yolov8*.pt
+*.py[cod]
+*$py.class
+
+# 產出目錄與測試圖表
 artifacts/
+*.png
+*.jpg
+*.jpeg
+
+# 機密與身分憑證（絕對不可上傳）
+*-storage.json
+instagram-storage.json
+facebook-storage.json
+.env
+.env.*
+*.pem
+
+# 編輯器與 IDE 設定檔
+.vscode/
+.idea/
+
+# 模型權重資料夾（超過 GitHub 單檔/總量限制，改用雲端連結分享）
+anti_fraud_E3_macbert/
+*.safetensors
+*.bin
+
+# 系統產出的推論 JSON 報告 (避免在根目錄測試時殘留)
+report.json
+
+# 作業系統雜湊與暫存檔 (Windows / macOS)
+Thumbs.db
+desktop.ini
+.DS_Store

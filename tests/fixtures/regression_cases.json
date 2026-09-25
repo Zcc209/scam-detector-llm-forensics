@@ -1,0 +1,24 @@
+{
+  "provenance": "Synthetic regression fixtures, not a labeled real-world benchmark",
+  "page_cases": [
+    {"id": "ig_unavailable_zh", "title": "Instagram", "body": "很抱歉，此頁面無法使用。你點擊的連結可能發生故障，或該頁面已遭移除。", "url": "https://www.instagram.com/a/", "http_status": 200, "expected": "load_error"},
+    {"id": "ig_unavailable_en", "title": "This page isn't available", "body": "The link you followed may be broken", "url": "https://www.instagram.com/a/", "http_status": 200, "expected": "load_error"},
+    {"id": "ig_load_error", "title": "無法載入頁面 • Instagram", "body": "請稍後再試", "url": "https://www.instagram.com/a/", "http_status": 200, "expected": "load_error"},
+    {"id": "fb_unavailable", "title": "Facebook", "body": "此頁面無法使用", "url": "https://www.facebook.com/a/", "http_status": 200, "expected": "load_error"},
+    {"id": "login_password", "title": "Instagram", "body": "Welcome", "url": "https://www.instagram.com/a/", "http_status": 200, "has_password": true, "expected": "login_wall"},
+    {"id": "login_redirect", "title": "Instagram", "body": "Welcome", "url": "https://www.instagram.com/accounts/login/", "http_status": 200, "expected": "login_wall"},
+    {"id": "login_prompt", "title": "Instagram", "body": "Log in to continue", "url": "https://www.instagram.com/a/", "http_status": 200, "expected": "login_wall"},
+    {"id": "forbidden", "title": "Forbidden", "body": "Some content", "url": "https://example.com/", "http_status": 403, "expected": "http_error"},
+    {"id": "navigation_failed", "title": "", "body": "Some content", "url": "https://example.com/", "http_status": null, "expected": "http_error"},
+    {"id": "empty", "title": "Example", "body": "  ", "url": "https://example.com/", "http_status": 200, "expected": "empty_page"},
+    {"id": "normal_account", "title": "Instagram", "body": "JUKSY 街星，時尚潮流與生活資訊。", "url": "https://www.instagram.com/juksy_mag/", "http_status": 200, "expected": null}
+  ],
+  "risk_cases": [
+    {"id": "blocked_lookalike", "domain_score": 80, "capture_allowed": false, "browser_status": "blocked", "model_status": null, "prediction": null, "expected": "High"},
+    {"id": "unusable_is_unknown", "domain_score": 0, "capture_allowed": true, "browser_status": "unusable", "model_status": null, "prediction": null, "expected": "Unknown"},
+    {"id": "model_error_is_unknown", "domain_score": 0, "capture_allowed": true, "browser_status": "success", "model_status": "OCR_ERROR", "prediction": "Unknown", "expected": "Unknown"},
+    {"id": "model_fraud_signal", "domain_score": 0, "capture_allowed": true, "browser_status": "success", "model_status": "SUCCESS", "prediction": "Fraud", "expected": "Medium"},
+    {"id": "model_normal_limited", "domain_score": 0, "capture_allowed": true, "browser_status": "success", "model_status": "SUCCESS", "prediction": "Normal", "expected": "Low"},
+    {"id": "redirect_cannot_launder", "domain_score": 80, "capture_allowed": false, "browser_status": "success", "model_status": "SUCCESS", "prediction": "Normal", "expected": "High"}
+  ]
+}

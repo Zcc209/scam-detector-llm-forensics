@@ -1,193 +1,59 @@
-# Antifraud 防詐分析系統
+# 社群網址與圖片防詐分析
 
-本專案接受「圖片」或「網址」作為輸入，整合 Playwright、YOLOv8、PaddleOCR、SerpApi、ImgBB 與 Gemini，產生結構化防詐分析報告。
+本專案先以網域規則檢查網址，再用 Playwright 擷取頁面，最後將可用的網頁文字或上傳圖片的 OCR 文字送入 MacBERT。`risk_level` 是風險提示，不是詐騙事實認定；模型 softmax 信心度也不是經校準的詐騙機率。
 
-網址輸入的流程是：
+## 安裝（Windows PowerShell）
 
-```text
-網址 -> Playwright 開啟頁面與截圖 -> YOLO/OCR/反向圖片搜尋 -> Gemini 判斷 -> JSON/Markdown 報告
-```
-
-圖片輸入則直接從影像分析開始：
-
-```text
-圖片 -> YOLO/OCR/反向圖片搜尋 -> Gemini 判斷 -> JSON/Markdown 報告
-```
-
-## 支援環境
-
-目前建議使用：
-
-- Windows 10/11
-- PowerShell 5.1 或更新版本
-- Python 3.10 或 3.11
-- Node.js 18 或更新版本
-- Google Chrome 或 Microsoft Edge（安裝於預設路徑）
-
-第一次執行 PaddleOCR/YOLO 時會下載模型，可能需要數分鐘。
-
-## 專案結構
-
-```text
-Antifraud/
-├─ main.js                       # 整合流程入口
-├─ image_analyzer.py             # YOLO、OCR、SerpApi、Gemini
-├─ run_analysis.ps1              # 原開發機 PowerShell 快捷入口
-├─ setup_instagram_session.js    # 建立 Instagram 登入狀態
-├─ setup_instagram_session.ps1   # 原開發機 Instagram 快捷入口
-├─ requirements.txt              # Python 套件
-├─ sample_upstream.json          # 不呼叫模型時的測試資料
-└─ src/
-   ├─ browserCapture.js          # Playwright 開頁與截圖
-   ├─ mergeReport.js             # 整合風險結果
-   └─ reportWriter.js            # Markdown 報告
-```
-
-## 原始 OCR／YOLO 程式
-
-專案最初的 OCR 與 YOLO 程式保留在 [`main`](./main) 檔案，對應的原始 commit 為：
-
-- [原本程式碼(OCR Yolo)](https://github.com/Zcc209/Antifraud/commit/ad2abf9e4a3989730aa96272f07af106fb0f345d)
-
-目前整合版以 `main.js` 作為流程入口，並由 `image_analyzer.py` 接續與改良原始影像分析邏輯；原始 `main` 檔案仍保留供版本追蹤與比對。
-
-## 1. 下載專案
+需要 Python 3.11/3.12、Git，以及網路連線。取得本倉庫後，在專案根目錄執行：
 
 ```powershell
 git clone https://github.com/Zcc209/Antifraud.git
-cd .\Antifraud
-```
-
-## 2. 安裝 Python 環境
-
-建議使用虛擬環境，避免影響電腦上的其他 Python 專案：
-
-```powershell
-py -3.11 -m venv .venv
-Set-ExecutionPolicy -Scope Process Bypass
+cd Antifraud
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
+python -m pip install torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cpu
 python -m pip install -r requirements.txt
+python -m playwright install chromium
 ```
 
-如果電腦沒有 `py` 指令，可改用：
+若 `python` 指向錯誤版本，先執行 `python --version`，或以已安裝的 Python 3.12 完整路徑建立虛擬環境。模型權重不在 GitHub 倉庫內。請將已取得的 MacBERT 模型放在 `anti_fraud_E3_macbert/`；該資料夾至少需含 `config.json`、`model.safetensors` 或 `pytorch_model.bin`，以及 tokenizer 所需檔案。模型在其他位置時，於分析指令加入 `--model-path "D:\models\anti_fraud_E3_macbert"`。
+
+## 執行
+
+只檢查網址，不需要模型或瀏覽器：
 
 ```powershell
-python -m venv .venv
+python run_pipeline.py --url "https://www.instagram.com/juksy_mag/" --domain-only
 ```
 
-確認 Python：
+檢查網址並截圖，不需要模型：
 
 ```powershell
-python --version
-python -m pip --version
+python run_pipeline.py --url "https://www.instagram.com/juksy_mag/" --capture-only
 ```
 
-## 3. 安裝 Node.js 與 Playwright
-
-先確認 Node.js：
+完整網址分析，或分析本機圖片：
 
 ```powershell
-node --version
-npm --version
+python run_pipeline.py --url "https://www.instagram.com/juksy_mag/"
+python run_pipeline.py --image "C:\path\to\sample.png"
 ```
 
-在專案資料夾安裝 Playwright：
+啟動網頁介面：
 
 ```powershell
-npm install --no-save --package-lock=false playwright
+python -m streamlit run web_ui.py
 ```
 
-程式會優先使用電腦預設路徑中的 Chrome 或 Edge。
+報告與截圖預設存於 `artifacts/`，命令列可用 `--output-dir` 指定輸出。`report.json` 會保留原始網域檢查、轉址檢查、擷取狀態、模型結果與最後風險依據。`page.png` 可能是錯誤頁或登入牆；**檔案存在不代表擷取成功**。此時報告為 `unusable`、風險為 `Unknown`，不會送入模型。網址疑似仿冒時為 `blocked`，不會前往該網址。只做 `--domain-only` 或 `--capture-only` 時，沒有內容模型判斷的風險可能為 `Unknown`。
 
-## 4. 設定 API Key
+預設使用未登入瀏覽器。不會自動載入本機社群登入狀態，也不會自動打開有頭瀏覽器；如確實需要，可明確指定 `--headed` 和 `--storage-state "C:\private\state.json"`。登入狀態與截圖可能含個資，請勿提交至 Git。
 
-請勿把 API key 寫進程式碼、README、commit 或公開聊天內容。建議使用重新產生的 key，並在「同一個 PowerShell 視窗」設定：
+## 測試與限制
 
 ```powershell
-$env:GEMINI_API_KEY="你的 Gemini API key"
-$env:SERPAPI_KEY="你的 SerpApi key"
-$env:IMGBB_API_KEY="你的 ImgBB API key"
+python -m unittest discover -s tests -v
 ```
 
-安全確認是否已設定（只顯示 True/False，不顯示內容）：
-
-```powershell
-[bool]$env:GEMINI_API_KEY
-[bool]$env:SERPAPI_KEY
-[bool]$env:IMGBB_API_KEY
-```
-
-API 用途：
-
-- `GEMINI_API_KEY`：產生最終風險判斷。完整分析需要設定。
-- `SERPAPI_KEY`：呼叫 Google Lens 反向圖片搜尋。
-- `IMGBB_API_KEY`：把待查圖片暫時上傳，提供 SerpApi 查詢。
-
-未設定 SerpApi 或 ImgBB 時，系統仍可執行 YOLO、OCR、Gemini，但會略過反向圖片搜尋。
-
-## 5. 圖片輸入
-
-先啟用虛擬環境：
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-完整分析圖片：
-
-```powershell
-node .\main.js `
-  --image "C:\path\to\test.jpg" `
-  --analyze-image `
-  --python ".\.venv\Scripts\python.exe"
-```
-
-支援常見的 JPG、JPEG、PNG 圖片，實際可讀格式由 OpenCV 決定。
-
-## 6. 一般網址輸入
-
-Playwright 會開啟網址、處理常見彈窗、產生截圖，再將截圖送進影像分析：
-
-```powershell
-node .\main.js `
-  --url "https://example.com" `
-  --analyze-image `
-  --python ".\.venv\Scripts\python.exe"
-```
-
-只測試 Playwright 截圖，不執行影像模型：
-
-```powershell
-node .\main.js --url "https://example.com"
-```
-
-## 7. Instagram 網址
-
-Instagram 對未登入的自動化瀏覽器可能顯示登入牆或「無法載入頁面」。第一次使用前，請建立自己的登入 session：
-
-```powershell
-node .\setup_instagram_session.js
-```
-
-執行後：
-
-1. Chrome 會自動開啟 Instagram 登入頁。
-2. 請在 Chrome 內手動登入，帳密不要輸入 PowerShell。
-3. 確認登入成功後，回到 PowerShell 按 Enter。
-4. 登入狀態會儲存在 `artifacts/auth/instagram-storage-state.json`。
-
-接著執行：
-
-```powershell
-node .\main.js `
-  --url "https://www.instagram.com/juksy_mag/" `
-  --analyze-image `
-  --python ".\.venv\Scripts\python.exe" `
-  --storage-state ".\artifacts\auth\instagram-storage-state.json"
-```
-
-登入狀態檔包含 session cookie，請勿分享。`artifacts/` 已被 `.gitignore` 排除。
-
-如果 session 過期，重新執行 `node .\setup_instagram_session.js` 即可。
-
+`tests/fixtures/regression_cases.json` 是**人工編寫的離線回歸案例**，涵蓋錯誤頁、登入牆、HTTP 錯誤、仿冒網址與風險合併；它只驗證程式行為，不能用來宣稱模型準確率。仍需蒐集有來源、合法使用且獨立標註的真實案例，才能計算 Precision、Recall、F1。部分社群平台對未登入瀏覽有限制，遇到登入牆應回報無法判斷，而非繞過限制或判成低風險。
