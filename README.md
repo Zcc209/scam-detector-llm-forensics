@@ -151,7 +151,7 @@ python run_pipeline.py --url "https://example.com" --explain        # 另外產�
 
 ## 重新訓練（選用，需要 NVIDIA 顯示卡與 Ollama）
 
-資料集已在 `data/`（官方判定案例、PTT 困難負樣本、圖片雜湊庫、165 清單）。微調的起點是原始版 MacBERT 權重，需放在 `anti_fraud_E3_macbert/`（不在上面的雲端連結中）：
+資料集已在 `data/`（官方判定案例、PTT 困難負樣本、圖片雜湊庫、165 清單）。微調以原始版 MacBERT 權重為起點，需放在 `anti_fraud_E3_macbert/`：
 
 ```powershell
 python build_dataset.py
