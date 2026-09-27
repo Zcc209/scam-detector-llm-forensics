@@ -17,7 +17,13 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 class ScamDetectionPipeline:
     def __init__(self, model_path: str = "./anti_fraud_E3_macbert"):
         print("=== 初始化系統組件 (EasyOCR + MacBERT) ===")
-        self.reader = easyocr.Reader(['ch_tra', 'en'], gpu=False)
+        import torch
+        use_gpu = torch.cuda.is_available()
+        if use_gpu:
+            free, _ = torch.cuda.mem_get_info()
+            # When another process (e.g. the local LLM) holds most of the VRAM, EasyOCR on GPU can stall; CPU is slower but safe.
+            use_gpu = free >= 1.5 * 1024 ** 3
+        self.reader = easyocr.Reader(['ch_tra', 'en'], gpu=use_gpu)
         self.detector = FraudDetector(model_path)
         print("=== 系統初始化完成 ===")
 
@@ -59,22 +65,15 @@ class ScamDetectionPipeline:
                     stdev_prob = statistics.stdev(probs)
                     dynamic_threshold = max(0.1, mean_prob - stdev_prob)
                     print(f"  📊 [自適應統計] 樣本數: {len(probs)}, 平均值: {mean_prob:.2f}, 標準差: {stdev_prob:.2f}")
-                    print(f"  ⚙️ [動態門檻] 設定為: {dynamic_threshold:.2f} (低於此分數且未觸發保護的雜訊將被剔除)")
+                    print(f"  ⚙️ [動態門檻] 設定為: {max(dynamic_threshold, 0.30):.2f} (所有文字採用相同信心度門檻)")
                 else:
                     dynamic_threshold = 0.0
                     print("  ⚠️ [自適應統計] 文字區塊過少，不啟動統計剔除機制。")
 
-                scam_keywords = [
-                    "翻紅", "飆股", "翻倍", "翻倉", "穩賺不賠", "高收益", "零風險", "內部消息", "內幕", "獨家專利", "暴利", "財富自由", "被套",
-                    "緊急通知", "刪掉", "限時", "即刻", "馬上", "錯過不再", "最後機會", "私訊", "卡位",
-                    "新台幣", "台幣", "台帶", "元", "目標", "現價", "預計", "本金", "入金", "出金", "USDT", "泰達幣", "匯款",
-                    "加LINE", "加賴", "老師", "助理", "群組", "客服"
-                ]
-
                 for bbox, text, prob in results:
-                    has_scam_keyword = any(keyword in text for keyword in scam_keywords)
-                    accepted = bool(prob >= max(dynamic_threshold, 0.30) or (prob >= 0.15 and has_scam_keyword))
-                    ocr_items.append({"text": text, "confidence": round(float(prob), 3), "accepted": accepted})
+                    accepted = bool(prob >= max(dynamic_threshold, 0.30))
+                    ocr_items.append({"text": text, "confidence": round(float(prob), 3), "accepted": accepted,
+                                      "bbox": [[float(x), float(y)] for x, y in bbox]})
                     if accepted:
                         extracted_texts.append(text)
                         print(f"  ✅ [保留] '{text}' (OCR 信心度: {prob:.2f})")

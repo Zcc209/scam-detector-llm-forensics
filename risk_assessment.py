@@ -38,10 +38,15 @@ def assess(domain, browser=None, image_result=None):
     summary["evidence_refs"] = image_result.get("evidence_refs") or []
     if prediction == "Fraud":
         summary.update(risk_level="Medium", basis="content_model_signal")
+    elif prediction == "Normal" and summary["rule_signals"]:
+        summary["basis"] = "normal_with_rule_signal"
     elif prediction == "Normal" and image_result.get("basis") != "single_modality":
         summary.update(risk_level="Low", basis="limited_content_evidence")
     elif prediction == "Normal":
         summary["basis"] = "single_modality_normal_insufficient"
-    elif image_result.get("basis") == "modality_conflict":
-        summary["basis"] = "modality_conflict"
+    elif image_result.get("basis") in ("modality_conflict", "conformal_ambiguous", "conformal_empty"):
+        summary["basis"] = image_result["basis"]
+    if image_result.get("score_type", "").startswith("stacked"):
+        summary.update(fused_fraud_score=image_result.get("fraud_score"), prediction_set=image_result.get("prediction_set"),
+                       calibration_status="fitted_on_labeled_cases_conformal_alpha_%s" % image_result.get("alpha"))
     return summary

@@ -30,9 +30,9 @@ def load_cases(manifest):
         if case["label"] not in LABELS or case["split"] not in SPLITS:
             raise ValueError(f"Invalid label or split: {case['case_id']}")
         group = case["group_id"]
-        if group in groups and groups[group] != (case["split"], case["label"]):
-            raise ValueError(f"Group leakage or contradictory label: {group}")
-        groups[group] = (case["split"], case["label"])
+        if group in groups and groups[group] != case["split"]:
+            raise ValueError(f"Group leakage: {group}")
+        groups[group] = case["split"]
         path = Path(case["report_path"])
         if not path.is_absolute():
             path = manifest.parent / path
@@ -85,7 +85,11 @@ def metrics(cases, method):
     recall = tp / (tp + fn) if tp + fn else None
     f1 = 2 * precision * recall / (precision + recall) if precision is not None and recall is not None and precision + recall else None
     coverage = sum(case["predictions"][method] != "Unknown" for case in cases) / len(cases)
+    negatives = sum(confusion["Normal"].values())
+    f1 = 2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else None
     return {"precision": precision, "recall": recall, "f1": f1, "coverage": coverage,
+            "false_positive_rate": fp / negatives if negatives else None,
+            "unknown_rate": 1 - coverage,
             "confusion_matrix": confusion, "error_cases": errors[:20]}
 
 

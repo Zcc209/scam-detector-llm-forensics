@@ -97,6 +97,11 @@ class FraudDetector:
         ).to(self.device)
 
         self.model.eval()
+        from attribution import fingerprint
+        self.model_identity = fingerprint(self.model_path)
+        self.class_order = [self.model.config.id2label.get(index) for index in (0, 1)]
+        if self.class_order != ["Normal", "Fraud"]:
+            raise ValueError("Model config must explicitly map index 0=Normal and index 1=Fraud")
 
     def clean_text(self, text: Any) -> str:
         """套用與訓練階段一致的 preprocessing"""
@@ -191,6 +196,7 @@ class FraudDetector:
         pred_label = "Fraud" if prediction_id == 1 else "Normal"
         fraud_conf = float(probabilities[1].item())
         normal_conf = float(probabilities[0].item())
+        logits = document_logits.detach().cpu().tolist()
 
         return {
             "prediction": pred_label,
@@ -202,6 +208,19 @@ class FraudDetector:
             "status": "SUCCESS",
             "confidence_type": "uncalibrated_softmax",
             "calibrated": False,
+            "score_provenance": {
+                "class_order": self.class_order,
+                "document_logits": logits,
+                "logit_difference": logits[1] - logits[0],
+                "formula": "p(Fraud)=1/(1+exp(-(z_Fraud-z_Normal)))",
+                "aggregation": "mean chunk logits before softmax",
+                "num_chunks": num_chunks,
+                "max_length": self.max_length,
+                "stride": self.stride,
+                "model_path": str(Path(self.model_path).resolve()),
+                "model_files_sha256": self.model_identity,
+                "class_mapping_source": "verified against model config.json id2label",
+            },
         }
 
 

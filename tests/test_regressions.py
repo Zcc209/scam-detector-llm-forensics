@@ -11,13 +11,32 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from risk_assessment import assess
-from web_capture import classify_page
+from web_capture import classify_page, settle_overlays
+import asyncio
+from unittest.mock import AsyncMock, MagicMock
 from run_pipeline import main
 
 FIXTURES = json.loads((Path(__file__).parent / "fixtures" / "regression_cases.json").read_text(encoding="utf-8"))
 
 
 class RegressionFixtures(unittest.TestCase):
+    def test_blank_modal_is_not_a_successful_page(self):
+        self.assertEqual(classify_page('Instagram', 'Dcard public profile',
+                                       'https://www.instagram.com/dcard.tw/', 200,
+                                       overlay={'obstructed': True}), 'obstructing_overlay')
+
+    def test_overlay_wait_is_bounded_and_detects_late_modal(self):
+        page = MagicMock()
+        page.evaluate = AsyncMock(side_effect=[{'obstructed': False}, {'obstructed': True},
+                                               {'obstructed': True}, {'obstructed': True}])
+        page.wait_for_timeout = AsyncMock()
+        page.keyboard.press = AsyncMock()
+        page.locator.return_value.first.count = AsyncMock(return_value=0)
+        state, dismissed, attempts = asyncio.run(settle_overlays(page, attempts=3))
+        self.assertTrue(state['obstructed'])
+        self.assertEqual(attempts, 3)
+        self.assertEqual(dismissed, [])
+
     def test_unusable_capture_never_starts_model(self):
         with tempfile.TemporaryDirectory() as output:
             args = ["run_pipeline.py", "--url", "https://www.instagram.com/example/", "--output-dir", output]

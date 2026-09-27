@@ -30,6 +30,18 @@ class GateTests(unittest.TestCase):
                     self.assertIsNone(report['browser_capture']['final_domain_analysis'])
                     self.assertFalse((Path(output) / 'page.png').exists())
 
+    def test_lookalike_rule_spares_official_links_and_common_words(self):
+        with patch('domain_check.require_public_url'):
+            # LINE's own Official Account short link and ordinary words that contain a brand name.
+            for url in ('https://lin.ee/CRfrzbf', 'https://linetv.tw', 'https://online.ntnu.edu.tw',
+                        'https://www.threadless.com', 'https://www.card.com.tw', 'https://www.china-airlines.com'):
+                with self.subTest(url=url):
+                    self.assertIsNone(analyze_url(url)['possible_impersonated_platform'])
+            for url in ('https://instagrarn.com', 'https://faceboook-verify.com', 'https://line-tw.cc',
+                        'https://threads-login.com', 'https://linne.me', 'https://twltter.com'):
+                with self.subTest(url=url):
+                    self.assertFalse(analyze_url(url)['capture_allowed'])
+
     def test_direct_capture_does_not_resolve_or_launch(self):
         with patch('web_capture.require_public_url') as dns:
             result = capture('https://www.intagram.com', '.')

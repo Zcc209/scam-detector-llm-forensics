@@ -40,6 +40,15 @@ class OCRGuardTests(unittest.TestCase):
         self.assertEqual(pipeline.process_image('test.png')['status'], 'OCR_ERROR')
         pipeline.detector.predict.assert_not_called()
 
+    def test_low_confidence_keyword_has_no_special_privilege(self):
+        for text in ('馬上點擊', '一般內容'):
+            pipeline = self.pipeline()
+            pipeline.reader.readtext.return_value = [([], text, 0.2)]
+            with redirect_stdout(io.StringIO()):
+                result = pipeline.process_image('test.png')
+            self.assertEqual(result['status'], 'SKIPPED_OCR_EMPTY')
+            pipeline.detector.predict.assert_not_called()
+
     def test_short_ocr_does_not_predict(self):
         import numpy as np
         pipeline = self.pipeline()
@@ -64,6 +73,7 @@ class CaptureTests(unittest.TestCase):
         context.new_cdp_session = AsyncMock(return_value=MagicMock(send=AsyncMock()))
         context.route_web_socket = AsyncMock()
         page.add_init_script = AsyncMock()
+        page.evaluate = AsyncMock(return_value={'obstructed': False, 'visible_dialogs': 0, 'overlay_count': 0})
         page.title = AsyncMock(return_value=title)
         page.goto = AsyncMock(return_value=MagicMock(status=status))
         page.wait_for_timeout = AsyncMock()
@@ -157,3 +167,20 @@ class DomainTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class UnstableViewportFusionTests(unittest.TestCase):
+    def test_ocr_becomes_main_text_when_dom_was_discarded(self):
+        # www.gov.tw regression: a carousel makes the DOM unstable; the OCR text must not be scored as "image-only
+        # text with the post text missing", a combination the fusion model never saw in training.
+        import fusion_model
+        from run_pipeline import decide_content
+        if not fusion_model.load():
+            self.skipTest('no fitted fusion model')
+        normal_ocr = {'status': 'SUCCESS', 'prediction': 'Normal', 'fraud_confidence': 0.008, 'normal_confidence': 0.992,
+                      'score_provenance': {'logit_difference': -4.8}}
+        report = {'source_agreement': {'status': 'SUCCESS'}, 'browser_capture': {'status': 'success'},
+                  'account_signals': {'signals': [], 'features': {}}, 'llm_evidence': {'status': 'disabled'},
+                  'image_forensics': {'status': 'SUCCESS'}}
+        decision = decide_content(report, None, normal_ocr)
+        self.assertLess(decision['fraud_score'], 0.5)

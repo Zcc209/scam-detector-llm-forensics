@@ -1,0 +1,125 @@
+{
+  "feature_names": [
+    "text_logit",
+    "text_missing",
+    "ocr_logit",
+    "ocr_missing",
+    "off_platform_contact",
+    "short_link",
+    "guaranteed_return",
+    "investment_lure",
+    "crypto_or_payment",
+    "urgency",
+    "free_giveaway",
+    "job_lure",
+    "impersonation_claim",
+    "verified_badge",
+    "throwaway_profile",
+    "large_audience",
+    "random_digit_handle",
+    "simplified_chinese",
+    "llm_tactic_count",
+    "llm_solicitation",
+    "llm_addresses_reader",
+    "llm_risk",
+    "llm_benign_act",
+    "llm_missing",
+    "image_known_scam_match",
+    "image_brand_mismatch",
+    "image_editor_tag"
+  ],
+  "weights": [
+    0.0,
+    0.0,
+    0.0,
+    -1.1666092516650486,
+    0.0,
+    0.0,
+    0.0,
+    1.171614090388749,
+    0.0,
+    0.0,
+    0.8207850807271776,
+    0.0,
+    0.0,
+    0.0,
+    2.1692885538808224,
+    0.0,
+    0.4152606992742414,
+    0.5854614206356331,
+    0.6933512728177668,
+    0.6267036984617163,
+    0.05904327386275175,
+    0.6872933028827055,
+    0.0,
+    0.05236762605484017,
+    3.9753628953612345,
+    0.0,
+    0.0
+  ],
+  "bias": 0.7741026184359125,
+  "l2": 1.0,
+  "sign_constrained": true,
+  "converged": true,
+  "conformal": {
+    "method": "mondrian_split_conformal",
+    "alpha": 0.1,
+    "score": "one_minus_class_probability",
+    "q_fraud": 0.5968859743026711,
+    "q_normal": 0.5480895852050541,
+    "n_fraud": 66,
+    "n_normal": 115,
+    "guarantee": "per-class coverage >= 90% under exchangeability with the calibration split"
+  },
+  "disagreement": {
+    "macbert_fraud_llm_low": {
+      "n": 7,
+      "fraud_rate": 0.42857142857142855
+    },
+    "macbert_normal_llm_risky": {
+      "n": 5,
+      "fraud_rate": 1.0
+    },
+    "split": "calibration (official verdicts, not used to fit weights)"
+  },
+  "version": "fusion-v1",
+  "trained_on": {
+    "dataset": "MODA fraudbuster official verdicts + PTT hard negatives",
+    "train_cases": 1333,
+    "calibration_cases": 181,
+    "test_metrics": {
+      "n": 178,
+      "tp": 30,
+      "fp": 14,
+      "tn": 95,
+      "fn": 39,
+      "unknown": 0,
+      "precision": 0.6818181818181818,
+      "recall": 0.43478260869565216,
+      "f1": 0.5309734513274337,
+      "fpr": 0.12844036697247707,
+      "accuracy": 0.702247191011236,
+      "unknown_rate": 0.0,
+      "f1_95ci": [
+        0.3548387096774194,
+        0.6878980891719745
+      ],
+      "fpr_95ci": [
+        0.06896551724137931,
+        0.19327731092436976
+      ]
+    },
+    "macbert_sha256": "49f90dd486e732cc380c881df142cd37d92ecbe75eaa2f1a08624788ee1cb6d2",
+    "generated_at": "2026-09-27T08:31:41.834972+00:00",
+    "auc": 0.6714532641935913,
+    "conformal_test": {
+      "coverage_fraud": 1.0,
+      "coverage_normal": 0.8990825688073395,
+      "unknown_rate": 0.7808988764044944,
+      "accuracy_when_decided": 0.717948717948718,
+      "f1_with_unknown": 0.5185185185185185,
+      "hard_negative_fpr": 0.019138755980861243
+    },
+    "hard_negative_fpr": 0.022328548644338118
+  }
+}

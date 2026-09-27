@@ -16,6 +16,7 @@ from evaluate import evaluate, load_cases, metrics, predictions, fit_temperature
 from fusion import fuse
 from prepare_165 import extract_candidates
 from risk_assessment import assess
+from report_status import incomplete_message
 from run_pipeline import main
 
 
@@ -26,6 +27,37 @@ def model_result(prediction, probability):
 
 
 class FusionTests(unittest.TestCase):
+    def setUp(self):
+        patcher = patch('review_workflow.enqueue')
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_borderline_ocr_is_not_silently_overridden(self):
+        result = fuse(model_result("Normal", 0.1065), model_result("Fraud", 0.5016))
+        self.assertEqual(result["prediction"], "Unknown")
+        self.assertEqual(result["source_decisions"]["screenshot_ocr"], "Fraud")
+        self.assertEqual(result["basis"], "modality_conflict")
+        self.assertEqual(assess(None, None, result)["risk_level"], "Unknown")
+        self.assertFalse(result["decision_policy"]["validated"])
+
+    def test_both_borderline_sources_remain_unknown(self):
+        result = fuse(model_result("Normal", 0.49), model_result("Fraud", 0.51))
+        self.assertEqual(result["prediction"], "Unknown")
+
+    def test_rule_signal_prevents_normal_clearance(self):
+        normal = {**model_result("Normal", 0.1), "rule_signals": ["guaranteed_return_claim"]}
+        self.assertEqual(assess(None, None, fuse(normal, normal))["risk_level"], "Unknown")
+
+    def test_conflict_message_is_not_an_execution_error(self):
+        report = {"content_analysis": {"basis": "modality_conflict"}, "evidence": {
+            "dom": {"model": {"prediction": "Normal"}},
+            "screenshot_ocr": {"model": {"prediction": "Fraud"}},
+        }}
+        message = incomplete_message(report)
+        self.assertIn("結果衝突", message)
+        self.assertIn("Unknown", message)
+        self.assertNotIn("請查看報告中的錯誤原因", message)
+
     def test_agreement_disagreement_and_missing_modality(self):
         fraud = model_result("Fraud", 0.8)
         normal = model_result("Normal", 0.1)
@@ -70,10 +102,11 @@ class FusionTests(unittest.TestCase):
                        "page_text": "官方活動", "navigation_checks": [], "final_domain_analysis": None}
             argv = ["run_pipeline.py", "--url", "https://www.instagram.com/example/",
                     "--model-path", str(root / "model"), "--output-dir", str(root / "output")]
-            with patch.object(sys, "argv", argv), patch("web_capture.capture", return_value=browser), \
+            with patch.object(sys, "argv", argv + ["--no-llm", "--no-follow"]), patch("web_capture.capture", return_value=browser), \
+                    patch("fusion_model.load", return_value=None), \
                     patch.dict(sys.modules, {"integrated_app": types.SimpleNamespace(ScamDetectionPipeline=FakePipeline)}), \
                     redirect_stdout(io.StringIO()):
-                self.assertEqual(main(), 2)
+                self.assertEqual(main(), 0)
             report = json.loads((root / "output" / "report.json").read_text(encoding="utf-8"))
             self.assertEqual(calls, ["dom", "ocr"])
             self.assertEqual(report["content_analysis"]["basis"], "modality_conflict")

@@ -14,6 +14,9 @@ artifacts/
 *.png
 *.jpg
 *.jpeg
+# 例外：示範／自我檢查用的截圖與文件中的流程圖要提交
+!data/demo/*.png
+!docs/*.png
 
 # 機密與身分憑證（絕對不可上傳）
 *-storage.json
@@ -39,3 +42,6 @@ report.json
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# 競賽版：微調權重與本機設定不進版控（融合模型 models/fusion_model*.json 要提交）
+models/macbert_social/

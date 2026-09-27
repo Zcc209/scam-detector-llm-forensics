@@ -1,26 +1,30 @@
 """Explainable URL checks inspired by URL_Analyzer.ipynb (not a fraud oracle)."""
 import ipaddress
+from pathlib import Path
 import re
 import socket
 from difflib import SequenceMatcher
 from urllib.parse import urlsplit, urlunsplit
 
 SOCIAL_DOMAINS = {
-    "Facebook": ["facebook.com", "fb.com", "fb.me", "messenger.com"],
-    "Instagram": ["instagram.com"],
+    "Facebook": ["facebook.com", "fb.com", "fb.me", "messenger.com", "fbcdn.net"],
+    "Instagram": ["instagram.com", "cdninstagram.com"],
     "Threads": ["threads.net", "threads.com"],
-    "X": ["x.com", "twitter.com", "t.co"],
-    "YouTube": ["youtube.com", "youtu.be"],
-    "TikTok": ["tiktok.com"], "LINE": ["line.me"],
+    "X": ["x.com", "twitter.com", "t.co", "twimg.com"],
+    "YouTube": ["youtube.com", "youtu.be", "ytimg.com"],
+    "TikTok": ["tiktok.com"],
+    # lin.ee is LINE's own short link for Official Accounts; linetv.tw / line.biz are LINE services.
+    "LINE": ["line.me", "lin.ee", "line.biz", "linecorp.com", "line-apps.com", "linetv.tw"],
     "WhatsApp": ["whatsapp.com", "wa.me"],
     "LinkedIn": ["linkedin.com", "lnkd.in"],
     "Discord": ["discord.com", "discord.gg"],
-    "Telegram": ["telegram.org", "t.me"],
-    "Reddit": ["reddit.com", "redd.it"],
+    "Telegram": ["telegram.org", "t.me", "telegram.me"],
+    "Reddit": ["reddit.com", "redd.it", "redditstatic.com", "redditmedia.com"],
     "Snapchat": ["snapchat.com"], "Pinterest": ["pinterest.com", "pin.it"],
-    "Weibo": ["weibo.com"], "Dcard": ["dcard.tw"],
+    "Weibo": ["weibo.com"], "Dcard": ["dcard.tw", "dcard.cc"],
     "Plurk": ["plurk.com"], "Bluesky": ["bsky.app"],
 }
+COMMON_WORD_BRANDS = {"threads", "messenger", "telegram", "discord"}
 
 
 def normalize_url(value):
@@ -69,6 +73,28 @@ def require_public_url(value):
     return normalized
 
 
+BLOCKLIST_PATH = Path(__file__).resolve().parent / "data" / "165_domains.tsv"
+_BLOCKLIST = None
+
+
+def listed_165(host, before=None):
+    """First ROC year-month the host (or a parent domain) appeared in the 165 open-data list."""
+    global _BLOCKLIST
+    if _BLOCKLIST is None:
+        _BLOCKLIST = {}
+        if BLOCKLIST_PATH.is_file():
+            for line in BLOCKLIST_PATH.read_text(encoding="utf-8").splitlines():
+                if line and not line.startswith("#"):
+                    domain, _, month = line.partition("	")
+                    _BLOCKLIST[domain] = month
+    labels = host.split(".")
+    for index in range(len(labels) - 1):
+        month = _BLOCKLIST.get(".".join(labels[index:]))
+        if month and (before is None or month < before):
+            return month
+    return None
+
+
 def analyze_url(value):
     # 1. 啟用 SSRF 防護檢查
     require_public_url(value)
@@ -92,9 +118,17 @@ def analyze_url(value):
                 brand = domain.split(".")[0]
                 if len(brand) < 4:
                     continue
-                # 比對網域標籤與官方品牌名的相似度
-                ratio = max(SequenceMatcher(None, compact(label), brand).ratio() for label in host.split("."))
-                if brand in compact(host) and brand != compact(host):
+                # 拼錯字比對（instagrarn、faceboook）：以 . 和 - 切開的片段逐一比，長度只能差 2 以內。
+                # 片段已完整包含品牌字時交給下面的 embedded 規則，否則 "online" 會因為和 "line" 相似而被當成仿冒 LINE；
+                # 短品牌不接受少字（"card" 不是 Dcard、"sky" 不是 bsky）。
+                tokens = [compact(t) for t in re.split(r"[.\-]", host) if t]
+                ratio = max((SequenceMatcher(None, t, brand).ratio() for t in tokens
+                             if brand not in t and abs(len(t) - len(brand)) <= 2 and (len(brand) > 5 or len(t) >= len(brand))),
+                            default=0.0)
+                # Short or dictionary-word brands must stand as their own token: "airlines" is not LINE, "threadless" is not Threads.
+                embedded = (brand in compact(host) if len(brand) >= 6 and brand not in COMMON_WORD_BRANDS else
+                            re.search(rf"(^|[.\-\d]){brand}([.\-\d]|$)", compact(host)) is not None)
+                if embedded and brand != compact(host):
                     ratio = max(ratio, 0.82)
                 if ratio > similarity:
                     similarity, impersonated = ratio, name
@@ -108,6 +142,11 @@ def analyze_url(value):
             evidence.append("Not a major social platform domain; generic web verification applied")
     else:
         evidence.append("Official-domain match does not authenticate an individual account")
+
+    listed = None if platform else listed_165(host)
+    if listed:
+        score += 80
+        evidence.append(f"Listed in Taiwan 165 fraud-website open data since ROC {listed}")
 
     if parsed.scheme == "http":
         score += 15
@@ -139,6 +178,7 @@ def analyze_url(value):
         matched_official_domain=target,
         possible_impersonated_platform=impersonated,
         lookalike_similarity=round(similarity, 3),
+        listed_165=listed,
         risk_score=score,
         risk_level="High" if score >= 60 else "Medium" if score >= 25 else "Low",
         domain_status="official" if platform else "lookalike" if impersonated else "unverified",
@@ -146,6 +186,7 @@ def analyze_url(value):
         block_reason=(
             "URL contains credentials" if credentials else
             f"Suspected {impersonated} impersonation" if impersonated else
+            "Listed in 165 fraud-website data" if listed else
             "High-risk URL" if score >= 60 else None
         ),
         evidence=evidence,
