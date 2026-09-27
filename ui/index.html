@@ -3,7 +3,7 @@
 <body>
 <header class="topbar"><a class="brand" href="/"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M12 1 3 5v6c0 5.6 3.8 10.7 9 12 5.2-1.3 9-6.4 9-12V5z"/><path fill="#fff" d="m10.6 15.6-3.5-3.5 1.4-1.4 2.1 2.1 4.9-4.9 1.4 1.4z"/></svg><span>詐騙帳號偵測系統</span></a><span class="workspace-label">整合影像鑑識與 LLM 技術</span></header>
 <main>
-<div class="page-heading"><div><h1>這個帳號或網頁可信嗎？</h1><p>輸入社群帳號、網址，或上傳截圖。系統會實際開啟頁面與連結，結合文字模型、LLM 與影像鑑識，告訴你有沒有詐騙風險以及判斷依據。</p></div></div>
+<div class="page-heading"><div><h1>這個帳號或網頁可信嗎？</h1><p>輸入社群帳號、網址，或上傳截圖。系統分三層運作：<b>安全取得</b>頁面與連結 → <b>多模態證據分析</b>（文字、LLM、影像、連結）→ <b>可信決策</b>（證據不足時交給人工），並附上判斷依據。</p></div></div>
 
 <div class="workspace">
 <aside class="control panel"><h2>新增分析</h2>
@@ -20,11 +20,14 @@
 <div id="busy-box" class="busy-box idle"><div class="activity-icon" aria-hidden="true"></div><div><h3 id="busy-title">準備開始分析</h3><p id="status" role="status" aria-live="polite">選擇輸入方式，開始檢查。</p></div></div>
 <div class="progress-heading"><span>步驟完成率</span><strong id="progress-percent">0%</strong></div><div id="progress-bar" class="progress-track" role="progressbar" aria-label="步驟完成率" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress-fill"></div></div><p id="experiment-progress" class="field-note" hidden></p>
 <ol class="timeline" aria-label="分析步驟">
-<li data-step="0" data-state="waiting"><div class="step-icon" aria-hidden="true"></div><div><strong>輸入確認</strong><small>確認網址或圖片</small></div><span id="stage-0">等待中</span></li>
-<li data-step="1" data-state="waiting"><div class="step-icon" aria-hidden="true"></div><div><strong>網域檢查</strong><small>165 涉詐清單與仿冒網址</small></div><span id="stage-1">等待中</span></li>
-<li data-step="2" data-state="waiting"><div class="step-icon" aria-hidden="true"></div><div><strong>頁面擷取</strong><small>開啟網頁、截圖並擷取文字</small></div><span id="stage-2">等待中</span></li>
-<li data-step="3" data-state="waiting"><div class="step-icon" aria-hidden="true"></div><div><strong>內容分析</strong><small>辨識圖片文字、文字模型判斷</small></div><span id="stage-3">等待中</span></li>
-<li data-step="4" data-state="waiting"><div class="step-icon" aria-hidden="true"></div><div><strong>證據融合</strong><small>追蹤連結、LLM、影像鑑識與綜合判斷</small></div><span id="stage-4">等待中</span></li>
+<li class="layer">第一層　安全取得</li>
+<li data-step="0" data-state="waiting"><div class="step-icon" aria-hidden="true"></div><div><strong>輸入確認</strong><small>確認網址或截圖</small></div><span id="stage-0">等待中</span></li>
+<li data-step="1" data-state="waiting"><div class="step-icon" aria-hidden="true"></div><div><strong>網域檢查</strong><small>已知涉詐網域（165）與品牌仿冒網域</small></div><span id="stage-1">等待中</span></li>
+<li data-step="2" data-state="waiting"><div class="step-icon" aria-hidden="true"></div><div><strong>頁面擷取</strong><small>受保護的瀏覽器開啟網頁、截圖、取得網頁文字</small></div><span id="stage-2">等待中</span></li>
+<li class="layer">第二層　多模態證據分析</li>
+<li data-step="3" data-state="waiting"><div class="step-icon" aria-hidden="true"></div><div><strong>證據分析</strong><small>網頁文字優先、OCR 補圖片內文字、MacBERT、LLM、影像鑑識、連結追蹤</small></div><span id="stage-3">等待中</span></li>
+<li class="layer">第三層　可信決策</li>
+<li data-step="4" data-state="waiting"><div class="step-icon" aria-hidden="true"></div><div><strong>綜合判斷</strong><small>融合模型 → 不確定時交人工 → 硬證據只升高風險</small></div><span id="stage-4">等待中</span></li>
 </ol></section>
 </div>
 
@@ -32,7 +35,7 @@
 <div class="section-heading"><h2>分析結果</h2><p id="target" class="target"></p></div>
 
 <article class="result" id="result-card">
-  <div class="result-main"><small class="eyebrow">分析結論</small><h2 id="risk"></h2><p id="reason"></p><p id="certainty" class="certainty"></p><details id="how" class="how" hidden><summary>這句話怎麼來的？</summary><div id="how-text"></div></details>
+  <div class="result-main"><small class="eyebrow">分析結論</small><h2 id="risk"></h2><p id="reason"></p><p id="certainty" class="certainty"></p><p id="basis-note" class="basis-note" hidden></p><p id="model-warning" class="basis-note warn" hidden>⚠ 這台電腦的 MacBERT 模型檔和融合模型的版本不一致，分數可能不準。請依 README 重新下載 macbert_social.zip。</p><details id="how" class="how" hidden><summary>這句話怎麼來的？</summary><div id="how-text"></div></details>
     <p class="muted">結論只針對這次看到的頁面或截圖，不代表已證實帳號身分。有疑慮請撥打 165 反詐騙專線，或<a href="https://fraudbuster.digiat.org.tw/accessibility/index" target="_blank" rel="noopener noreferrer">前往網路詐騙通報查詢網</a>。</p></div>
   <div class="result-score" id="result-score"><span id="score-label">詐騙可能性</span><strong id="score-value"></strong>
     <div class="scale" id="scale"><div class="scale-zones"><i></i><i></i><i></i></div><span id="score-marker" class="marker"></span></div>
@@ -41,7 +44,7 @@
 
 <div class="columns">
   <article class="panel"><h3>判斷依據</h3><p class="muted legend"><span class="up">▲ 推向詐騙</span><span class="down">▼ 推向正常</span>強度代表對結果的影響程度</p><ol id="reasons" class="reasons"></ol></article>
-  <article class="panel"><h3>文字模型分數</h3><p class="muted">MacBERT 判斷文字「像詐騙文案」的程度。網頁文字已濾掉選單與按鈕；圖片裡的文字只計算網頁上沒有的部分。</p><div id="charts"></div><p id="text-model" class="muted"></p></article>
+  <article class="panel"><h3>文字模型分數</h3><p class="muted">MacBERT 判斷文字「像詐騙文案」的程度。<b>網頁文字優先</b>（已濾掉選單與按鈕）；OCR 只補充圖片裡才有的字，網頁已有的字不重複計分。</p><div id="charts"></div><p id="text-model" class="muted"></p></article>
 </div>
 
 <article class="panel" id="links-panel"><div class="panel-heading"><h3>連結跳轉追蹤</h3><span id="links-tag" class="pill"></span></div>
@@ -49,7 +52,7 @@
   <div id="links"></div></article>
 
 <div class="columns">
-  <article class="panel"><h3>LLM 證據抽取</h3><p class="muted">Qwen2.5-7B 判斷文字是在招攬讀者還是一般討論，並找出詐騙手法；引用必須逐字出自原文。</p><div id="llm"></div></article>
+  <article class="panel"><h3>LLM 證據抽取</h3><p class="muted">本機 Qwen2.5-7B 負責<b>證據抽取與可解釋性</b>：判斷文字是在招攬讀者還是一般討論，並列出詐騙手法與逐字引用（引用不在原文中就剔除）。最終結論以融合模型為準，LLM 不單獨決定結果。</p><div id="llm"></div></article>
   <article class="panel"><h3>影像鑑識</h3><p class="muted">比對主管機關已確認的詐騙圖片，並檢查品牌與網域、圖片編修紀錄。</p><ul id="forensics" class="checks"></ul></article>
 </div>
 
@@ -65,7 +68,10 @@
 </div>
 
 <details class="panel research"><summary>系統實測成效、熱點圖與分數計算</summary>
-  <section class="research-block" id="metrics-block" hidden><h3>系統實測成效</h3><div id="metric-tiles" class="metric-tiles"></div><ul id="metric-notes" class="plain-list muted"></ul></section>
+  <section class="research-block" id="metrics-block" hidden><h3>系統實測成效</h3><p id="metric-source" class="muted"></p>
+    <h4>① 全體分類效能（每一筆都強制判為詐騙或正常）</h4><div id="metric-tiles" class="metric-tiles"></div>
+    <h4>② 加上「需要人工查證」之後</h4><div id="abstain-tiles" class="metric-tiles"></div>
+    <h4>③ 各平台（全體分類，不拒答）</h4><div class="scroll-table"><table id="platform-table"></table></div><ul id="metric-notes" class="plain-list muted"></ul></section>
   <section class="research-block"><h3>熱點文字</h3><p class="muted"><span class="swatch red"></span>讓分數偏向詐騙　<span class="swatch blue"></span>讓分數偏向正常　顏色越深影響越大</p><div id="heat-text"><p class="muted">本次未產生。勾選「進階設定 → 產生熱點圖」後重新分析。</p></div></section>
   <section class="research-block"><h3>分數計算</h3><div class="scroll-table"><table id="provenance"></table></div></section>
 </details>

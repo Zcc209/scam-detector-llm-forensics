@@ -41,6 +41,15 @@ class DatasetTests(unittest.TestCase):
             by_group.setdefault(case['group_id'], set()).add(case['split'])
         self.assertTrue(all(len(splits) == 1 for splits in by_group.values()))
 
+    def test_split_keeps_every_platform_in_test(self):
+        # Stratified by (label, platform): a small platform must not end up entirely in train.
+        cases = [{'case_id': f'{p}{i}', 'group_id': f'{p}{i}', 'label': 'Fraud', 'platforms': [p]}
+                 for p, n in (('Threads', 50), ('LINE', 10), ('Web', 10)) for i in range(n)]
+        split_groups(cases, seed=1)
+        for platform in ('Threads', 'LINE', 'Web'):
+            with self.subTest(platform=platform):
+                self.assertIn('test', {c['split'] for c in cases if c['platforms'] == [platform]})
+
     def test_image_only_lines_tolerate_ocr_errors(self):
         text = '限時免費領取熱搜名單，加入官方LINE立即領取'
         self.assertEqual(image_only_lines(['限時免費領取熱搜名單', '加入官方LlNE立即領取', '保證月入十萬'], text), ['保證月入十萬'])

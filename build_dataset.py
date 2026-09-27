@@ -58,10 +58,15 @@ def groups(cases):
         del case['_root']
 
 
+def platform(case):
+    return (case.get('platforms') or ['Unknown'])[0]
+
+
 def split_groups(cases, seed, fractions=(0.6, 0.2, 0.2)):
+    # Stratify by (label, platform) so small platforms (LINE, TikTok, web) also reach the test split.
     by_label = defaultdict(set)
     for case in cases:
-        by_label[case['label']].add(case['group_id'])
+        by_label[(case['label'], platform(case))].add(case['group_id'])
     assignment = {}
     rng = random.Random(seed)
     for label, members in sorted(by_label.items()):
@@ -79,7 +84,8 @@ def main():
     parser.add_argument('--fraudbuster', type=Path, default=Path('data/fraudbuster/cases.jsonl'))
     parser.add_argument('--hard-negatives', type=Path, default=Path('data/hard_negatives/ptt.jsonl'))
     parser.add_argument('--output', type=Path, default=Path('data/dataset/manifest.jsonl'))
-    parser.add_argument('--max-fraud', type=int, default=900, help='cap Fraud cases (newest first) to limit imbalance')
+    parser.add_argument('--max-fraud', type=int, default=900,
+                        help='cap Fraud cases per platform (newest first); Threads dominates recent reports')
     parser.add_argument('--max-per-group', type=int, default=10)
     parser.add_argument('--seed', type=int, default=20261115)
     args = parser.parse_args()
@@ -107,7 +113,12 @@ def main():
                       'label_source': case['label_source'], 'source_url': case['source_url'],
                       'category': case.get('category'), 'platforms': case.get('platforms'),
                       'reported_at': case.get('reported_at')})
-    fraud = [c for c in cases if c['label'] == 'Fraud'][:args.max_fraud]
+    # A global newest-first cap kept ~95% Threads and dropped most Facebook / web / LINE fraud; cap each platform instead.
+    per_platform, fraud = Counter(), []
+    for case in (c for c in cases if c['label'] == 'Fraud'):
+        per_platform[platform(case)] += 1
+        if per_platform[platform(case)] <= args.max_fraud:
+            fraud.append(case)
     cases = fraud + [c for c in cases if c['label'] == 'Normal']
     groups(cases)
     # One campaign (e.g. hundreds of template bot profiles) must not dominate the benchmark.
@@ -150,6 +161,8 @@ def main():
     table = Counter((c['source'], c['split'], c['label']) for c in cases + hard)
     for key in sorted(table):
         print(*key, table[key])
+    for key, count in sorted(Counter((platform(c), c['label'], c['split']) for c in cases).items()):
+        print('platform', *key, count)
     print('official groups:', len({c['group_id'] for c in cases}), 'cases:', len(cases), '-> ', args.output)
 
 

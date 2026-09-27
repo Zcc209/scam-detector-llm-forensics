@@ -19,6 +19,7 @@ import numpy as np
 import calibration
 import conformal
 import fusion_model
+from attribution import fingerprint
 from fusion import fuse
 from image_forensics import hamming
 
@@ -91,6 +92,14 @@ def weights(cases):
     return [w * sum(per_class.values()) / (2 * per_class[c['label']]) for c, w in zip(cases, raw)]
 
 
+first_platform = lambda c: (c.get('platforms') or ['Unknown'])[0]
+PLATFORM_GROUPS = (('Threads', lambda c: first_platform(c) == 'Threads'),
+                   ('Facebook', lambda c: first_platform(c) == 'FB'),
+                   ('一般網頁', lambda c: first_platform(c) == 'Web'),
+                   ('LINE／TikTok／IG／YT', lambda c: first_platform(c) in ('LINE', 'Tiktok', 'IG', 'YT')),
+                   ('other', lambda c: first_platform(c) != 'Threads'))
+
+
 def binary_metrics(labels, predictions):
     tp = sum(y == 1 and p == 'Fraud' for y, p in zip(labels, predictions))
     fp = sum(y == 0 and p == 'Fraud' for y, p in zip(labels, predictions))
@@ -146,10 +155,9 @@ def evaluate_method(name, test, hard_test, predict, score=None):
     predictions = [predict(c) for c in test]
     result = {'name': name, 'label_zh': NAMES_ZH.get(name, name), 'official_test': binary_metrics(labels, predictions)}
     result['official_test'].update(bootstrap(test, predictions))
-    # Fraud reports are mostly Threads; show whether performance holds on other platforms.
+    # Fraud reports are mostly Threads; show whether performance holds on each other platform.
     result['by_platform'] = {}
-    for name_, keep in (('Threads', lambda c: 'Threads' in (c.get('platforms') or [])),
-                        ('other', lambda c: 'Threads' not in (c.get('platforms') or []))):
+    for name_, keep in PLATFORM_GROUPS:
         subset = [(int(c['label'] == 'Fraud'), p) for c, p in zip(test, predictions) if keep(c)]
         if subset:
             result['by_platform'][name_] = binary_metrics([y for y, _ in subset], [p for _, p in subset])
@@ -264,11 +272,16 @@ def report_markdown(results):
             lines.append(f"|{m['label_zh']}|{pct(c['coverage_fraud'])}|{pct(c['coverage_normal'])}|{pct(c['unknown_rate'])}|"
                          f"{pct(c['accuracy_when_decided'])}|{pct(c['f1_with_unknown'])}|")
     lines += ['', '## 平台分組（詐騙通報以 Threads 為主，檢查是否只學到平台差異）', '',
-              '|方法|Threads F1|Threads FPR|其他平台 F1|其他平台 FPR|', '|---|---:|---:|---:|---:|']
+              '官方判定測試集依原貼文平台拆開計算（不拒答的 argmax 結果）。樣本少的平台信賴區間很寬，只能當參考。', '',
+              '|方法|平台|詐騙／非詐騙筆數|Precision|Recall|F1|FPR|', '|---|---|---:|---:|---:|---:|---:|']
     for m in results['methods']:
-        b = m.get('by_platform') or {}
-        t, o = b.get('Threads') or {}, b.get('other') or {}
-        lines.append(f"|{m['label_zh']}|{pct(t.get('f1'))}|{pct(t.get('fpr'))}|{pct(o.get('f1'))}|{pct(o.get('fpr'))}|")
+        if m['name'] not in ('macbert_argmax', 'macbert_ft_argmax', 'lr_full_ft'):
+            continue
+        for platform_name, _ in PLATFORM_GROUPS:
+            b = (m.get('by_platform') or {}).get(platform_name)
+            if b:
+                lines.append(f"|{m['label_zh']}|{'其他平台合計' if platform_name == 'other' else platform_name}|{b['tp'] + b['fn']}／{b['tn'] + b['fp']}|"
+                             f"{pct(b['precision'])}|{pct(b['recall'])}|{pct(b['f1']) if b['tp'] + b['fn'] else '—'}|{pct(b['fpr'])}|")
     lines += ['', '## D. 行為測試（人工合成句，只測穩健性，不是準確率）', '',
               '|測試類型:預期|句數|MacBERT 原始通過率|本系統通過率|本系統判錯（非 Unknown）|', '|---|---:|---:|---:|---:|']
     for kind, s in (results.get('behavioral') or {}).get('summary', {}).items():
@@ -390,7 +403,7 @@ def main():
     final = models['lr_full']
     # Held-out numbers stored with the model so the website's "系統實測成效" always matches the deployed weights.
     headline = lambda m: {'test_metrics': m['official_test'], 'auc': m.get('auc'), 'conformal_test': m.get('conformal_test'),
-                          'hard_negative_fpr': m.get('hard_negative_fpr')}
+                          'hard_negative_fpr': m.get('hard_negative_fpr'), 'by_platform': m.get('by_platform')}
     final['disagreement'] = disagreement([c for c in calib if c['label_kind'] == 'official_verdict'])
     if ft_model:
         ft_model['disagreement'] = disagreement([c for c in ft_cases if c['split'] == 'calibration' and c['label_kind'] == 'official_verdict'])
@@ -405,7 +418,9 @@ def main():
     if ft_model:
         ft_model.update(version='fusion-v1-social', text_model_path='models/macbert_social', trained_on={
             **final['trained_on'], **headline(next(m for m in methods if m['name'] == 'lr_full_ft')),
-            'macbert': 'models/macbert_social (fine-tuned on train split)'})
+            'macbert': 'models/macbert_social (fine-tuned on train split)',
+            # run_pipeline warns when the downloaded MacBERT is not the one these weights were fitted with
+            'text_model_sha256': fingerprint(ROOT / 'models' / 'macbert_social').get('model.safetensors')})
         fusion_model.SOCIAL_MODEL_PATH.write_text(json.dumps(ft_model, ensure_ascii=False, indent=2), encoding='utf-8')
 
     results = {'generated_at': datetime.now(timezone.utc).isoformat(), 'alpha': args.alpha, 'macbert_sha256': sha,

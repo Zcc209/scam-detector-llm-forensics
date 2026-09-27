@@ -84,7 +84,17 @@ function verdictOf(data) {
   if (!data.browser_capture && !ocrLines) return {cls: 'unknown', title: '需要人工查證',
     reason: '截圖中沒有辨識到任何文字。請確認上傳的是清楚、未過度壓縮的貼文或聊天截圖。'};
   return {cls: 'unknown', title: '需要人工查證',
-    reason: (c.prediction_set || []).length === 2 ? '證據同時符合詐騙與正常的特徵，系統不自動下結論。' : '可用的證據不足，無法判斷。'};
+    reason: (c.prediction_set || []).length === 2 ? '證據同時符合詐騙與正常的特徵。這是安全設計：不確定時不硬判，交給人工查證，避免冤枉正常帳號或放過詐騙。' : '可用的證據不足，系統不硬判，請人工查證。'};
+}
+const LEVEL_ZH = {High: '高度疑似詐騙', Medium: '疑似詐騙', Low: '未發現明顯詐騙跡象', Unknown: '需要人工查證'};
+const BASIS_ZH = {redirect_rule: '連結追蹤命中高風險規則', redirect_heuristic: '連結跳轉出現多項可疑特徵', screenshot_domain: '截圖中的網址是已知涉詐或仿冒網域',
+  brand_impersonation: '畫面品牌與網址不符', known_scam_image: '圖片與主管機關確認的詐騙素材相同', too_little_text: '截圖文字太短，又沒有任何具體證據'};
+function basisNote(data) {
+  const a = data.assessment || {};
+  if (data.status === 'blocked') return '這個網址命中已知涉詐網域（165）或品牌仿冒網域，系統在第一層就停止，不開啟網頁，也不執行內容模型。';
+  if (!a.model_risk_level || a.model_risk_level === a.risk_level || !BASIS_ZH[a.basis]) return '';
+  if (a.basis === 'too_little_text') return `模型的基礎結論是「${LEVEL_ZH[a.model_risk_level]}」；但${BASIS_ZH[a.basis]}，為避免硬判而誤判，改為「需要人工查證」。`;
+  return `模型（融合＋拒答）的基礎結論是「${LEVEL_ZH[a.model_risk_level]}」；因為${BASIS_ZH[a.basis]}，依安全優先原則提高為「${LEVEL_ZH[a.risk_level]}」。硬證據只會提高風險，不會把結論改得更安全。`;
 }
 function renderResult(data) {
   const v = verdictOf(data), c = data.content_analysis || {}, a = data.assessment || {};
@@ -92,6 +102,8 @@ function renderResult(data) {
   $('risk').textContent = v.title;
   $('reason').textContent = v.reason;
   $('target').textContent = target;
+  const note = basisNote(data);
+  $('basis-note').hidden = !note; $('basis-note').textContent = note;
   const score = c.fraud_score;
   const ruleHit = data.status === 'blocked' || (a.risk_level === 'High' && RULES.includes(a.basis));
   $('scale').hidden = $('scale-labels').hidden = ruleHit || !Number.isFinite(score);
@@ -123,7 +135,8 @@ function renderResult(data) {
       el('p', `　・融合分數高於 ${excludeNormal.toFixed(1)}% → 排除「正常」　・融合分數低於 ${excludeFraud.toFixed(1)}% → 排除「詐騙」`),
       el('p', `② 這次分數是 ${p.toFixed(1)}%，` + (p > excludeNormal && p >= excludeFraud ? '高於排除「正常」的線，所以只剩「詐騙」。'
         : p < excludeFraud && p <= excludeNormal ? '低於排除「詐騙」的線，所以只剩「正常」。' : '落在兩條線之間，兩種結論都無法排除，所以交給人工查證。')),
-      el('p', `③ ${alpha}% 信心水準的意思：照這個規則，真正的詐騙帳號約每 10 個最多 1 個會被誤排除「詐騙」，真正的正常帳號也一樣。這是方法（conformal prediction）在統計上保證的，前提是新案例和校準資料性質相近。`));
+      el('p', `③ ${alpha}% 信心水準的意思：照這個規則，真正的詐騙帳號約每 10 個最多 1 個會被誤排除「詐騙」，真正的正常帳號也一樣。這是方法（conformal prediction）在統計上保證的，前提是新案例和校準資料性質相近。`),
+      el('p', '④「需要人工查證」是刻意的安全設計，不是系統故障：證據不足或互相矛盾時不硬判，避免把正常帳號冤枉成詐騙，也避免把詐騙誤放為正常。'));
   }
 }
 
@@ -260,9 +273,9 @@ function renderAccount(data) {
   else if (d.listed_165) check(list, 'bad', `列於 165 涉詐網站公告（民國 ${d.listed_165} 起）`, d.hostname);
   else if (d.domain_status === 'lookalike') check(list, 'bad', `疑似仿冒 ${d.possible_impersonated_platform}`, d.hostname);
   else if (d.domain_status === 'official') check(list, '', `${d.matched_platform} 官方網域`, '網域正確不代表帳號本身可信。');
-  else check(list, 'info', '一般網站，未列於 165 涉詐清單', d.hostname);
+  else check(list, 'info', `一般網站：${d.hostname}`, '不在已知涉詐網域清單，也不像品牌仿冒網域。網域檢查只能抓這兩類，新出現的詐騙網站要靠內容與連結分析判斷。');
   const o = data.ood || {};
-  if (o.status === 'SUCCESS') check(list, o.out_of_distribution ? 'bad' : '', o.out_of_distribution ? '內容和訓練資料差異大，文字分數參考價值較低' : '內容與訓練資料相近，模型分數可參考');
+  if (o.status === 'SUCCESS') check(list, o.out_of_distribution ? 'bad' : '', o.out_of_distribution ? '內容和訓練資料差異大，文字分數參考價值較低' : '內容與訓練資料相近，模型分數可參考', '分布外偵測只提醒可信度，不會改變結論。');
   const chips = $('signals'); chips.replaceChildren();
   for (const s of data.account_signals?.signals || []) chips.append(el('span', `${SIGNALS[s.signal] || s.signal}：${s.evidence}`, 'chip ' + (s.weight > 0 ? 'risk' : 'safe')));
   if (!chips.children.length) chips.append(el('span', '沒有偵測到帳號層級的可疑特徵', 'chip'));
@@ -459,7 +472,7 @@ function evidence(tab) {
 function render(data, id, name) {
   report = data; jobId = id; if (name) target = name;
   $('results').hidden = false;
-  renderResult(data); renderReasons(data); renderLinks(data); renderCharts(data); renderLLM(data); renderForensics(data); renderAccount(data); renderAlignment(data);
+  renderResult(data); $('model-warning').hidden = data.model_check?.status !== 'mismatch'; renderReasons(data); renderLinks(data); renderCharts(data); renderLLM(data); renderForensics(data); renderAccount(data); renderAlignment(data);
   renderScreen(data); renderResearch(data);
   evidence(data.evidence?.dom ? 'dom' : 'ocr');
 }
@@ -467,17 +480,29 @@ function render(data, id, name) {
 /* ---------- measured performance (read from the deployed fusion model, so it follows retraining) ---------- */
 async function loadMetrics() {
   try {
-    const m = await (await fetch('/api/model-info')).json(), t = m.test || {};
+    const m = await (await fetch('/api/model-info')).json(), t = m.test || {}, c = m.conformal || {};
     if (!Number.isFinite(t.f1)) return;
-    const tiles = [['Precision', t.precision, '判為詐騙的案例中，真的是詐騙'], ['Recall', t.recall, '詐騙案例中，被抓出來的比例'],
-      ['F1', t.f1, 'Precision 與 Recall 的調和平均'], ['FPR', t.fpr, '正常案例被誤判為詐騙'], ['AUC', t.auc, '分數排序能力，0.5 等於亂猜']];
-    $('metric-tiles').replaceChildren(...tiles.filter(([, v]) => Number.isFinite(v)).map(([name, v, note]) => {
-      const box = el('div', null, 'metric'); box.append(el('span', name), el('strong', name === 'AUC' ? v.toFixed(2) : (v * 100).toFixed(1) + '%'), el('small', note)); return box;
-    }));
-    const c = m.conformal || {}, lines = [];
-    lines.push(`測試資料：${t.n} 筆數位發展部「網路詐騙通報查詢網」中主管機關已判定的案例（${t.tp + t.fn} 筆詐騙、${t.tn + t.fp} 筆非詐騙），和訓練資料依帳號分組、完全不重疊。`);
-    if (Number.isFinite(c.unknown_rate)) lines.push(`加上「需要人工查證」機制後：${(c.unknown_rate * 100).toFixed(0)}% 的案例交給人工，其餘有下結論的案例準確率 ${(c.accuracy_when_decided * 100).toFixed(1)}%。`);
-    if (Number.isFinite(m.hard_negative_fpr)) lines.push(`訓練時沒看過的 PTT 看板一般文章，誤判為詐騙的比例 ${(m.hard_negative_fpr * 100).toFixed(1)}%。`);
+    const f = v => (v * 100).toFixed(1) + '%';
+    const tile = (name, v, note, fmt = f) => { const box = el('div', null, 'metric'); box.append(el('span', name), el('strong', fmt(v)), el('small', note)); return box; };
+    $('metric-source').textContent = `測試資料：${t.n} 筆數位發展部「網路詐騙通報查詢網」中主管機關已判定的案例（${t.tp + t.fn} 筆詐騙、${t.tn + t.fp} 筆非詐騙），和訓練資料依帳號分組、完全不重疊。`;
+    // ① and ② use different denominators, so they are shown apart and must not be compared directly.
+    $('metric-tiles').replaceChildren(...[['Precision', t.precision, '判為詐騙的案例中，真的是詐騙'], ['Recall', t.recall, '詐騙案例中，被抓出來的比例'],
+      ['F1', t.f1, 'Precision 與 Recall 的調和平均'], ['FPR', t.fpr, '正常案例被誤判為詐騙'], ['AUC', t.auc, '分數排序能力，0.5 等於亂猜', v => v.toFixed(2)]]
+      .filter(([, v]) => Number.isFinite(v)).map(x => tile(...x)));
+    $('abstain-tiles').replaceChildren(...[['交給人工的比例', c.unknown_rate, '證據不足以區分時不硬判'], ['已判斷樣本的準確率', c.accuracy_when_decided, '只計算系統有下結論的案例'],
+      ['詐騙覆蓋率', c.coverage_fraud, '真詐騙沒有被誤排除「詐騙」的比例'], ['正常覆蓋率', c.coverage_normal, '真正常沒有被誤排除「正常」的比例']]
+      .filter(([, v]) => Number.isFinite(v)).map(x => tile(...x)));
+    const table = $('platform-table'); table.replaceChildren();
+    const head = el('tr'); for (const h of ['平台', '詐騙／非詐騙筆數', 'Precision', 'Recall', 'F1', 'FPR']) head.append(el('th', h)); table.append(head);
+    for (const [name, b] of Object.entries(m.by_platform || {})) {
+      if (name === 'other') continue;
+      const tr = el('tr'), p = v => Number.isFinite(v) ? f(v) : '—';
+      tr.append(el('td', name), el('td', `${b.tp + b.fn}／${b.tn + b.fp}`, 'num'), el('td', p(b.precision), 'num'), el('td', p(b.recall), 'num'), el('td', b.tp + b.fn ? p(b.f1) : '—', 'num'), el('td', p(b.fpr), 'num'));
+      table.append(tr);
+    }
+    const lines = ['①是「每一筆都強制判定」時的整體效能；②是加上拒答後，只看系統有下結論的案例。兩者分母不同，不能直接比較。',
+      '③樣本少的平台（例如 LINE、TikTok）數字波動很大，只能當參考。'];
+    if (Number.isFinite(m.hard_negative_fpr)) lines.push(`訓練時沒看過的 PTT 看板一般文章，誤判為詐騙的比例 ${f(m.hard_negative_fpr)}。`);
     lines.push('以上是融合模型對「貼文文字與圖片」的成效；165 清單、仿冒網址、連結追蹤等規則另外判定，不含在內。');
     $('metric-notes').replaceChildren(...lines.map(x => el('li', x)));
     $('metrics-block').hidden = false;

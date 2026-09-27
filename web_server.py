@@ -48,7 +48,8 @@ def model_info():
         if path.is_file():
             trained = json.loads(path.read_text(encoding='utf-8')).get('trained_on') or {}
             return {'version': name, 'test': {**(trained.get('test_metrics') or {}), 'auc': trained.get('auc')},
-                    'conformal': trained.get('conformal_test'), 'hard_negative_fpr': trained.get('hard_negative_fpr')}
+                    'conformal': trained.get('conformal_test'), 'hard_negative_fpr': trained.get('hard_negative_fpr'),
+                    'by_platform': trained.get('by_platform')}
     return {}
 
 

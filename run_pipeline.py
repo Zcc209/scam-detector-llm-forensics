@@ -230,6 +230,10 @@ def main():
                 from integrated_app import ScamDetectionPipeline
                 report["models"] = {"macbert": str(text_model_path), "fusion": str(fusion_path)}
                 pipeline = ScamDetectionPipeline(str(text_model_path.resolve()))
+                expected = ((fusion_model.load(fusion_path) or {}).get("trained_on") or {}).get("text_model_sha256")
+                actual = (getattr(getattr(pipeline, "detector", None), "model_identity", None) or {}).get("model.safetensors")
+                report["model_check"] = {"status": "mismatch" if expected and actual != expected else "ok",
+                                         "expected_sha256": expected, "actual_sha256": actual}
 
                 browser_data = report.get("browser_capture")
                 page_text = browser_data.get("page_text") if browser_data else None
@@ -272,8 +276,7 @@ def main():
                     "model_scope": "image_only_text" if alignment.get("available") else "all_ocr_text",
                     "model": ocr_result,
                 }
-                progress.set(3, 'done' if (dom_result and dom_result.get('status') == 'SUCCESS') or ocr_result.get('status') == 'SUCCESS' else 'warning')
-                progress.set(4, 'running')
+                text_ok = (dom_result and dom_result.get('status') == 'SUCCESS') or ocr_result.get('status') == 'SUCCESS'
                 report["source_agreement"] = fuse(dom_result, ocr_result)
                 content_text = "\n".join(filter(None, [dom_text, "\n".join(ocr_segments)]))
                 report["account_signals"], report["llm_evidence"], report["image_forensics"] = extra_evidence(
@@ -288,9 +291,15 @@ def main():
                     report["link_trace"] = follow_links(args, (browser_data or {}).get("final_url"),
                                                         (browser_data or {}).get("outbound_links"), page_text, ocr_full, out, pipeline)
                 report.setdefault("link_trace", {"status": "no_links"})
+                # Layer 2 (multimodal evidence) ends here; layer 3 (trustworthy decision) starts.
+                progress.set(3, 'done' if text_ok else 'warning')
+                progress.set(4, 'running')
                 result = decide_content(report, dom_result, ocr_result, fusion_path)
                 report["content_analysis"] = result
                 report["assessment"] = assess(report["domain_analysis"], report["browser_capture"], result)
+                # The fusion + conformal conclusion before hard evidence is applied; the rules below only raise the risk
+                # (safety first), except that too-short screenshots abstain instead of being called fraud.
+                report["assessment"]["model_risk_level"] = report["assessment"]["risk_level"]
                 exact = [m for m in (report["image_forensics"].get("known_scam_matches") or [])
                          if m["distance"]["phash"] <= 4 and m["distance"]["dhash"] <= 4]
                 links = report.get("link_trace") or {}
