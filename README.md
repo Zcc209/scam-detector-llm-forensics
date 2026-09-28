@@ -18,14 +18,15 @@
 
 - **網域檢查只負責已知風險**：偵測「已知涉詐網域（165）＋品牌仿冒網域」，命中就不開啟網頁。它不能涵蓋所有新出現的詐騙網站；沒命中的網域交給內容與連結分析判斷。
 - **網頁文字優先，OCR 只補圖片內文字**：先用網頁上的文字（濾掉選單、按鈕）；OCR 只處理圖片裡才有的字，並和網頁文字對齊、去重、校正讀錯的字。網頁內容一直變動、拿不到穩定文字時，才改用整張截圖的 OCR。
-- **LLM 負責證據抽取與可解釋性**：Qwen2.5-7B 判斷文字是否在招攬讀者，列出詐騙手法並附逐字引用。消融實驗中加入 LLM 只讓 F1 提高約 2 個百分點，**它不是準確率的主要來源**，價值在於讓結論有看得懂、可核對的理由。
+- **LLM 負責證據抽取與可解釋性**：Qwen2.5-7B 判斷文字是否在招攬讀者，列出詐騙手法並附逐字引用。消融實驗顯示**它不是準確率的主要來源**（數字見下方實測成效），價值在於讓結論有看得懂、可核對的理由。
 - **模型先下基礎結論，硬證據再做安全升級**：融合模型與 conformal 先產生基礎結論；165 命中、仿冒、冒用品牌、已知詐騙圖等硬證據**只會提高風險**。「高度疑似詐騙」只由硬證據產生，模型單獨判斷最高為「疑似詐騙」。
 - **分布外偵測只提醒**：文字和訓練資料差太多時，提醒文字分數參考價值較低，不直接改變結論。
 - **「需要人工查證」是安全設計**：證據不足或互相矛盾時不硬判，避免冤枉正常帳號、也避免放過詐騙。
 
+<!-- results:start（由 run_experiments.py 自動產生，請勿手動修改） -->
 ## 實測成效
 
-測試資料：數位發展部「網路詐騙通報查詢網」中主管機關已判定的案例，**198 筆（85 詐騙、113 非詐騙）**，和訓練資料依帳號、聯絡方式、相似文字分組，完全不重疊。
+測試資料：數位發展部「網路詐騙通報查詢網」中主管機關已判定的案例，**198 筆（85 詐騙、113 非詐騙）**，和訓練資料依帳號、聯絡方式、相似文字分組，完全不重疊。以下所有數字都由 `run_experiments.py` 從同一份 [`docs/experiment_results.json`](docs/experiment_results.json) 產生，與 [實驗結果](docs/experiment_results.md) 和網站上的「系統實測成效」一致。
 
 **① 全體分類效能**（每一筆都強制判為詐騙或正常）
 
@@ -48,16 +49,19 @@
 | 一般網頁 | 9／18 | 63.6% | 33.3% |
 | LINE／TikTok／IG／YT | 0／9 | — | 0.0% |
 
-**跨平台泛化**：官方通報以 Threads 為主。原本的資料集只取最新 900 筆詐騙，幾乎全是 Threads，因此改成各平台分別取樣，並依平台分層切分訓練／測試。在**同一份測試集**上比較：
+**跨平台泛化**：官方通報以 Threads 為主。原本的資料集只取最新 900 筆詐騙，幾乎全是 Threads，因此改成各平台分別取樣，並依平台分層切分訓練／測試。在**同一份測試集**上比較微調 MacBERT（`python compare_recipes.py`）：
 
 | 訓練方式 | F1 | AUC | Facebook F1 |
 |---|---:|---:|---:|
 | 舊作法（Threads 為主） | 51.7% | 0.74 | 18.2% |
 | 新作法（各平台平衡） | **68.3%** | **0.83** | **70.0%** |
 
-（以上為微調 MacBERT 單獨的結果。）先前公布的 F1 79.1% 是在幾乎全為 Threads 的測試集上量到的，高估了跨平台的實力；現在的數字比較接近實際情況。官方資料中 LINE、TikTok、IG 的詐騙案例內容多已被移除（只剩預設圖示），無法用於評估，這是目前資料的限制。
+**LLM 的貢獻**：消融實驗中，加入 LLM 讓 F1 變化 +2.2 個百分點；完整模型關掉 LLM，F1 變化 -2.1 個百分點。LLM 不是準確率的主要來源，定位是證據抽取與可解釋性。
 
-其他：原始 MacBERT 在同一份測試集上 Recall 只有 2.4%、AUC 0.48；訓練時沒看過的 PTT 看板一般文章，誤判為詐騙的比例 8.6%。完整數字見 [實驗結果](docs/experiment_results.md)，代表性案例見 [demo 案例](docs/demo_cases.md)。
+**注意**：舊資料切分（只取最新 900 筆詐騙，測試集 178 筆：69 詐騙／109 非詐騙，幾乎全為 Threads）曾量到完整系統 F1 79.1%、AUC 0.92。該切分高估了跨平台表現，已停用；其餘數字全部來自目前的切分。
+
+其他：原始 MacBERT 在同一份測試集上 Recall 2.4%、AUC 0.48；訓練時沒看過的 PTT 看板一般文章，誤判為詐騙的比例 8.6%。官方資料中 LINE、TikTok、IG 的詐騙案例內容多已被移除（只剩預設圖示），無法用於評估。代表性案例見 [demo 案例](docs/demo_cases.md)。
+<!-- results:end -->
 
 更多說明：[系統運作說明](docs/system_walkthrough.md)（輸入一個網址後的每一步、網頁每個區塊的意思）。
 
@@ -80,8 +84,8 @@
 ### 1. 下載程式
 
 ```powershell
-git clone https://github.com/Zcc209/Antifraud.git
-cd Antifraud
+git clone https://github.com/Zcc209/scam-detector-llm-forensics.git
+cd scam-detector-llm-forensics
 ```
 
 ### 2. 建立虛擬環境並安裝套件
@@ -117,7 +121,7 @@ python -m playwright install chromium
 解壓縮後的資料夾結構：
 
 ```text
-Antifraud/
+scam-detector-llm-forensics/
   models/
     macbert_social/
       config.json
@@ -199,10 +203,11 @@ python score_dataset.py base
 python finetune_macbert.py --batch 16 --max-length 256
 python score_dataset.py rescore --model-path models/macbert_social
 python score_dataset.py llm
+python compare_recipes.py      # 選用：同一份測試集上比較新舊資料取樣方式
 python run_experiments.py
 ```
 
-最後一步會更新 `models/fusion_model*.json`、`models/ood_reference*.json` 和 `docs/experiment_results.md`，網站上的「系統實測成效」也會跟著更新。
+最後一步會從同一次實驗產生所有數字：`docs/experiment_results.json`（唯一的數字來源）、`docs/experiment_results.md`、README 的「實測成效」、`models/fusion_model*.json`（網站上的「系統實測成效」讀這個檔）。`tests/test_results_consistency.py` 會檢查這幾份是否一致，手動改其中一份會讓測試失敗。
 
 ## 專案結構
 
@@ -215,7 +220,7 @@ python run_experiments.py
 | `account_signals.py`、`llm_evidence.py`、`image_forensics.py`、`link_tracer.py`、`ood.py` | 各項證據 |
 | `fusion_model.py`、`conformal.py`、`risk_assessment.py` | 融合、拒答、結論 |
 | `attribution.py`、`report_explanation.py` | 熱點圖與報告說明 |
-| `collect_*.py`、`build_dataset.py`、`score_dataset.py`、`finetune_macbert.py`、`run_experiments.py` | 資料蒐集、訓練與評估 |
+| `collect_*.py`、`build_dataset.py`、`score_dataset.py`、`finetune_macbert.py`、`compare_recipes.py`、`run_experiments.py` | 資料蒐集、訓練與評估 |
 | `data/` | 165 清單、資料集、詐騙圖片雜湊庫、示範截圖 |
 | `models/` | 融合模型與分布外偵測參考值（MacBERT 權重另外下載） |
 | `docs/` | 說明文件、實驗結果、流程圖 |

@@ -1,0 +1,3262 @@
+{
+  "generated_at": "2026-09-28T02:37:25.917106+00:00",
+  "alpha": 0.1,
+  "macbert_sha256": "49f90dd486e732cc380c881df142cd37d92ecbe75eaa2f1a08624788ee1cb6d2",
+  "data": {
+    "official": {
+      "train/Fraud": 268,
+      "calibration/Fraud": 98,
+      "test/Fraud": 85,
+      "calibration/Normal": 119,
+      "train/Normal": 334,
+      "test/Normal": 113
+    },
+    "hard_negative": {
+      "train": 813,
+      "test": 627,
+      "calibration": 237
+    },
+    "official_groups": 935
+  },
+  "methods": [
+    {
+      "name": "macbert_argmax",
+      "label_zh": "MacBERT 原始 argmax（原系統單路）",
+      "official_test": {
+        "n": 198,
+        "tp": 2,
+        "fp": 6,
+        "tn": 107,
+        "fn": 83,
+        "unknown": 0,
+        "precision": 0.25,
+        "recall": 0.023529411764705882,
+        "f1": 0.043010752688172046,
+        "fpr": 0.05309734513274336,
+        "accuracy": 0.5505050505050505,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.0,
+          0.10526315789473684
+        ],
+        "fpr_95ci": [
+          0.017241379310344827,
+          0.10236220472440945
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 1,
+          "fp": 3,
+          "tn": 49,
+          "fn": 55,
+          "unknown": 0,
+          "precision": 0.25,
+          "recall": 0.017857142857142856,
+          "f1": 0.03333333333333333,
+          "fpr": 0.057692307692307696,
+          "accuracy": 0.46296296296296297,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 1,
+          "fp": 1,
+          "tn": 33,
+          "fn": 19,
+          "unknown": 0,
+          "precision": 0.5,
+          "recall": 0.05,
+          "f1": 0.09090909090909091,
+          "fpr": 0.029411764705882353,
+          "accuracy": 0.6296296296296297,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 0,
+          "fp": 2,
+          "tn": 16,
+          "fn": 9,
+          "unknown": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.5925925925925926,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 0,
+          "tn": 9,
+          "fn": 0,
+          "unknown": 0,
+          "precision": null,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 1.0,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 1,
+          "fp": 3,
+          "tn": 58,
+          "fn": 28,
+          "unknown": 0,
+          "precision": 0.25,
+          "recall": 0.034482758620689655,
+          "f1": 0.06060606060606061,
+          "fpr": 0.04918032786885246,
+          "accuracy": 0.6555555555555556,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.4799583550234253,
+      "calibration": {
+        "brier": 0.41007427866252444,
+        "log_loss": 1.7086337163340772,
+        "ece": 0.4024565908469899
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 173,
+          "weight": 173.0,
+          "mean_score": 0.02162256415104332,
+          "observed_fraud_rate": 0.44508670520231214
+        },
+        {
+          "bin": 1,
+          "count": 12,
+          "weight": 12.0,
+          "mean_score": 0.13528242831428847,
+          "observed_fraud_rate": 0.25
+        },
+        {
+          "bin": 2,
+          "count": 1,
+          "weight": 1.0,
+          "mean_score": 0.21731676161289215,
+          "observed_fraud_rate": 1.0
+        },
+        {
+          "bin": 3,
+          "count": 4,
+          "weight": 4.0,
+          "mean_score": 0.3356892541050911,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 4,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 5,
+          "count": 2,
+          "weight": 2.0,
+          "mean_score": 0.5706550180912018,
+          "observed_fraud_rate": 0.0
+        },
+        {
+          "bin": 6,
+          "count": 2,
+          "weight": 2.0,
+          "mean_score": 0.6518018543720245,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 7,
+          "count": 3,
+          "weight": 3.0,
+          "mean_score": 0.7453547517458597,
+          "observed_fraud_rate": 0.3333333333333333
+        },
+        {
+          "bin": 8,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 9,
+          "count": 1,
+          "weight": 1.0,
+          "mean_score": 0.9295935034751892,
+          "observed_fraud_rate": 0.0
+        }
+      ],
+      "hard_negative_fpr": 0.12759170653907495,
+      "hard_negative_unknown": 0.0
+    },
+    {
+      "name": "legacy_agreement",
+      "label_zh": "原系統 DOM/OCR 一致性規則",
+      "official_test": {
+        "n": 198,
+        "tp": 2,
+        "fp": 6,
+        "tn": 107,
+        "fn": 83,
+        "unknown": 2,
+        "precision": 0.25,
+        "recall": 0.023529411764705882,
+        "f1": 0.043010752688172046,
+        "fpr": 0.05309734513274336,
+        "accuracy": 0.5505050505050505,
+        "unknown_rate": 0.010101010101010102,
+        "f1_95ci": [
+          0.0,
+          0.10526315789473684
+        ],
+        "fpr_95ci": [
+          0.017241379310344827,
+          0.10236220472440945
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 1,
+          "fp": 3,
+          "tn": 49,
+          "fn": 55,
+          "unknown": 0,
+          "precision": 0.25,
+          "recall": 0.017857142857142856,
+          "f1": 0.03333333333333333,
+          "fpr": 0.057692307692307696,
+          "accuracy": 0.46296296296296297,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 1,
+          "fp": 1,
+          "tn": 33,
+          "fn": 19,
+          "unknown": 2,
+          "precision": 0.5,
+          "recall": 0.05,
+          "f1": 0.09090909090909091,
+          "fpr": 0.029411764705882353,
+          "accuracy": 0.6296296296296297,
+          "unknown_rate": 0.037037037037037035
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 0,
+          "fp": 2,
+          "tn": 16,
+          "fn": 9,
+          "unknown": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.5925925925925926,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 0,
+          "tn": 9,
+          "fn": 0,
+          "unknown": 0,
+          "precision": null,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 1.0,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 1,
+          "fp": 3,
+          "tn": 58,
+          "fn": 28,
+          "unknown": 2,
+          "precision": 0.25,
+          "recall": 0.034482758620689655,
+          "f1": 0.06060606060606061,
+          "fpr": 0.04918032786885246,
+          "accuracy": 0.6555555555555556,
+          "unknown_rate": 0.022222222222222223
+        }
+      },
+      "hard_negative_fpr": 0.12759170653907495,
+      "hard_negative_unknown": 0.0
+    },
+    {
+      "name": "lr_text",
+      "label_zh": "MacBERT（重新校準）",
+      "official_test": {
+        "n": 198,
+        "tp": 0,
+        "fp": 0,
+        "tn": 113,
+        "fn": 85,
+        "unknown": 0,
+        "precision": null,
+        "recall": 0.0,
+        "f1": 0.0,
+        "fpr": 0.0,
+        "accuracy": 0.5707070707070707,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.0,
+          0.0
+        ],
+        "fpr_95ci": [
+          0.0,
+          0.0
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 0,
+          "fp": 0,
+          "tn": 52,
+          "fn": 56,
+          "unknown": 0,
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 0.48148148148148145,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 0,
+          "fp": 0,
+          "tn": 34,
+          "fn": 20,
+          "unknown": 0,
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 0.6296296296296297,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 0,
+          "fp": 0,
+          "tn": 18,
+          "fn": 9,
+          "unknown": 0,
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 0.6666666666666666,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 0,
+          "tn": 9,
+          "fn": 0,
+          "unknown": 0,
+          "precision": null,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 1.0,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 0,
+          "fp": 0,
+          "tn": 61,
+          "fn": 29,
+          "unknown": 0,
+          "precision": null,
+          "recall": 0.0,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 0.6777777777777778,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.5,
+      "calibration": {
+        "brier": 0.25,
+        "log_loss": 0.6931471805599453,
+        "ece": 0.07070707070707072
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 1,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 2,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 3,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 4,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 5,
+          "count": 198,
+          "weight": 198.0,
+          "mean_score": 0.5,
+          "observed_fraud_rate": 0.4292929292929293
+        },
+        {
+          "bin": 6,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 7,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 8,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 9,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        }
+      ],
+      "hard_negative_fpr": 0.0,
+      "hard_negative_unknown": 0.0,
+      "conformal_test": {
+        "coverage_fraud": 1.0,
+        "coverage_normal": 1.0,
+        "unknown_rate": 1.0,
+        "accuracy_when_decided": null,
+        "f1_with_unknown": 0.0,
+        "hard_negative_fpr": 0.0
+      },
+      "weights": {
+        "text_logit": 0.0,
+        "text_missing": 0.0
+      }
+    },
+    {
+      "name": "lr_text_ocr",
+      "label_zh": "+ 圖片內文字",
+      "official_test": {
+        "n": 198,
+        "tp": 9,
+        "fp": 8,
+        "tn": 105,
+        "fn": 76,
+        "unknown": 0,
+        "precision": 0.5294117647058824,
+        "recall": 0.10588235294117647,
+        "f1": 0.17647058823529413,
+        "fpr": 0.07079646017699115,
+        "accuracy": 0.5757575757575758,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.0784313725490196,
+          0.2857142857142857
+        ],
+        "fpr_95ci": [
+          0.025423728813559324,
+          0.12173913043478261
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 3,
+          "fp": 4,
+          "tn": 48,
+          "fn": 53,
+          "unknown": 0,
+          "precision": 0.42857142857142855,
+          "recall": 0.05357142857142857,
+          "f1": 0.09523809523809523,
+          "fpr": 0.07692307692307693,
+          "accuracy": 0.4722222222222222,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 4,
+          "fp": 1,
+          "tn": 33,
+          "fn": 16,
+          "unknown": 0,
+          "precision": 0.8,
+          "recall": 0.2,
+          "f1": 0.32,
+          "fpr": 0.029411764705882353,
+          "accuracy": 0.6851851851851852,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 2,
+          "fp": 2,
+          "tn": 16,
+          "fn": 7,
+          "unknown": 0,
+          "precision": 0.5,
+          "recall": 0.2222222222222222,
+          "f1": 0.3076923076923077,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.6666666666666666,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 1,
+          "tn": 8,
+          "fn": 0,
+          "unknown": 0,
+          "precision": 0.0,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.8888888888888888,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 6,
+          "fp": 4,
+          "tn": 57,
+          "fn": 23,
+          "unknown": 0,
+          "precision": 0.6,
+          "recall": 0.20689655172413793,
+          "f1": 0.3076923076923077,
+          "fpr": 0.06557377049180328,
+          "accuracy": 0.7,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.5175429463820926,
+      "calibration": {
+        "brier": 0.2511645960137086,
+        "log_loss": 0.6963794447423933,
+        "ece": 0.07529270979896704
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 1,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 2,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 3,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 4,
+          "count": 181,
+          "weight": 181.0,
+          "mean_score": 0.4835664928257348,
+          "observed_fraud_rate": 0.4198895027624309
+        },
+        {
+          "bin": 5,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 6,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 7,
+          "count": 17,
+          "weight": 17.0,
+          "mean_score": 0.7283777258080869,
+          "observed_fraud_rate": 0.5294117647058824
+        },
+        {
+          "bin": 8,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 9,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        }
+      ],
+      "hard_negative_fpr": 0.0,
+      "hard_negative_unknown": 0.0,
+      "conformal_test": {
+        "coverage_fraud": 1.0,
+        "coverage_normal": 0.9292035398230089,
+        "unknown_rate": 0.9141414141414141,
+        "accuracy_when_decided": 0.5294117647058824,
+        "f1_with_unknown": 0.17647058823529413,
+        "hard_negative_fpr": 0.0
+      },
+      "weights": {
+        "text_logit": 0.0,
+        "text_missing": 0.0,
+        "ocr_logit": 0.0,
+        "ocr_missing": -1.0521650780057903
+      }
+    },
+    {
+      "name": "lr_+account",
+      "label_zh": "+ 帳號/手法規則",
+      "official_test": {
+        "n": 198,
+        "tp": 23,
+        "fp": 18,
+        "tn": 95,
+        "fn": 62,
+        "unknown": 0,
+        "precision": 0.5609756097560976,
+        "recall": 0.27058823529411763,
+        "f1": 0.36507936507936506,
+        "fpr": 0.1592920353982301,
+        "accuracy": 0.5959595959595959,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.25263157894736843,
+          0.47297297297297297
+        ],
+        "fpr_95ci": [
+          0.08108108108108109,
+          0.2403846153846154
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 12,
+          "fp": 7,
+          "tn": 45,
+          "fn": 44,
+          "unknown": 0,
+          "precision": 0.631578947368421,
+          "recall": 0.21428571428571427,
+          "f1": 0.32,
+          "fpr": 0.1346153846153846,
+          "accuracy": 0.5277777777777778,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 7,
+          "fp": 7,
+          "tn": 27,
+          "fn": 13,
+          "unknown": 0,
+          "precision": 0.5,
+          "recall": 0.35,
+          "f1": 0.4117647058823529,
+          "fpr": 0.20588235294117646,
+          "accuracy": 0.6296296296296297,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 4,
+          "fp": 2,
+          "tn": 16,
+          "fn": 5,
+          "unknown": 0,
+          "precision": 0.6666666666666666,
+          "recall": 0.4444444444444444,
+          "f1": 0.5333333333333333,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.7407407407407407,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 2,
+          "tn": 7,
+          "fn": 0,
+          "unknown": 0,
+          "precision": 0.0,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.2222222222222222,
+          "accuracy": 0.7777777777777778,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 11,
+          "fp": 11,
+          "tn": 50,
+          "fn": 18,
+          "unknown": 0,
+          "precision": 0.5,
+          "recall": 0.3793103448275862,
+          "f1": 0.43137254901960786,
+          "fpr": 0.18032786885245902,
+          "accuracy": 0.6777777777777778,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.568974492451848,
+      "calibration": {
+        "brier": 0.24190619011395326,
+        "log_loss": 0.6772414138437799,
+        "ece": 0.07455166916168887
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 1,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 2,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 3,
+          "count": 1,
+          "weight": 1.0,
+          "mean_score": 0.33609099258365943,
+          "observed_fraud_rate": 0.0
+        },
+        {
+          "bin": 4,
+          "count": 156,
+          "weight": 156.0,
+          "mean_score": 0.4530207003511524,
+          "observed_fraud_rate": 0.3974358974358974
+        },
+        {
+          "bin": 5,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.5301999922468095,
+          "observed_fraud_rate": 0.3333333333333333
+        },
+        {
+          "bin": 6,
+          "count": 10,
+          "weight": 10.0,
+          "mean_score": 0.6592741293493422,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 7,
+          "count": 21,
+          "weight": 21.0,
+          "mean_score": 0.7341886815036174,
+          "observed_fraud_rate": 0.6666666666666666
+        },
+        {
+          "bin": 8,
+          "count": 3,
+          "weight": 3.0,
+          "mean_score": 0.8248837932478631,
+          "observed_fraud_rate": 0.3333333333333333
+        },
+        {
+          "bin": 9,
+          "count": 1,
+          "weight": 1.0,
+          "mean_score": 0.9126446916428715,
+          "observed_fraud_rate": 1.0
+        }
+      ],
+      "hard_negative_fpr": 0.03508771929824561,
+      "hard_negative_unknown": 0.0,
+      "conformal_test": {
+        "coverage_fraud": 1.0,
+        "coverage_normal": 0.8761061946902655,
+        "unknown_rate": 0.8181818181818181,
+        "accuracy_when_decided": 0.6111111111111112,
+        "f1_with_unknown": 0.35,
+        "hard_negative_fpr": 0.022328548644338118
+      },
+      "weights": {
+        "text_logit": 0.0,
+        "text_missing": 0.0,
+        "ocr_logit": 0.0,
+        "ocr_missing": -1.0988003057590714,
+        "off_platform_contact": 0.7686509010203898,
+        "short_link": 0.0,
+        "guaranteed_return": 0.0,
+        "investment_lure": 0.936097915305885,
+        "crypto_or_payment": 0.0,
+        "urgency": 0.5012635842610124,
+        "free_giveaway": 0.9378329359341091,
+        "job_lure": 0.0,
+        "impersonation_claim": 0.16829423768769738,
+        "verified_badge": 0.0,
+        "throwaway_profile": 1.4391816116300291,
+        "large_audience": -0.48922917576596314,
+        "random_digit_handle": 0.21909717889193236,
+        "simplified_chinese": 0.027775578663983867
+      }
+    },
+    {
+      "name": "lr_+llm",
+      "label_zh": "+ LLM 證據抽取",
+      "official_test": {
+        "n": 198,
+        "tp": 24,
+        "fp": 15,
+        "tn": 98,
+        "fn": 61,
+        "unknown": 0,
+        "precision": 0.6153846153846154,
+        "recall": 0.2823529411764706,
+        "f1": 0.3870967741935484,
+        "fpr": 0.13274336283185842,
+        "accuracy": 0.6161616161616161,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.2727272727272727,
+          0.49206349206349204
+        ],
+        "fpr_95ci": [
+          0.0625,
+          0.20535714285714285
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 12,
+          "fp": 5,
+          "tn": 47,
+          "fn": 44,
+          "unknown": 0,
+          "precision": 0.7058823529411765,
+          "recall": 0.21428571428571427,
+          "f1": 0.3287671232876712,
+          "fpr": 0.09615384615384616,
+          "accuracy": 0.5462962962962963,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 8,
+          "fp": 7,
+          "tn": 27,
+          "fn": 12,
+          "unknown": 0,
+          "precision": 0.5333333333333333,
+          "recall": 0.4,
+          "f1": 0.45714285714285713,
+          "fpr": 0.20588235294117646,
+          "accuracy": 0.6481481481481481,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 4,
+          "fp": 2,
+          "tn": 16,
+          "fn": 5,
+          "unknown": 0,
+          "precision": 0.6666666666666666,
+          "recall": 0.4444444444444444,
+          "f1": 0.5333333333333333,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.7407407407407407,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 1,
+          "tn": 8,
+          "fn": 0,
+          "unknown": 0,
+          "precision": 0.0,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.8888888888888888,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 12,
+          "fp": 10,
+          "tn": 51,
+          "fn": 17,
+          "unknown": 0,
+          "precision": 0.5454545454545454,
+          "recall": 0.41379310344827586,
+          "f1": 0.47058823529411764,
+          "fpr": 0.16393442622950818,
+          "accuracy": 0.7,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.5520041644976574,
+      "calibration": {
+        "brier": 0.23718022956744148,
+        "log_loss": 0.6659836441702794,
+        "ece": 0.07809350104514186
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 1,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 2,
+          "count": 1,
+          "weight": 1.0,
+          "mean_score": 0.25102948205899744,
+          "observed_fraud_rate": 0.0
+        },
+        {
+          "bin": 3,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 4,
+          "count": 158,
+          "weight": 158.0,
+          "mean_score": 0.4319416998956489,
+          "observed_fraud_rate": 0.3860759493670886
+        },
+        {
+          "bin": 5,
+          "count": 5,
+          "weight": 5.0,
+          "mean_score": 0.548246292959043,
+          "observed_fraud_rate": 0.2
+        },
+        {
+          "bin": 6,
+          "count": 14,
+          "weight": 14.0,
+          "mean_score": 0.6813997188412025,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 7,
+          "count": 10,
+          "weight": 10.0,
+          "mean_score": 0.7468899159671775,
+          "observed_fraud_rate": 0.9
+        },
+        {
+          "bin": 8,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.8346559703497313,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 9,
+          "count": 4,
+          "weight": 4.0,
+          "mean_score": 0.9637922624080246,
+          "observed_fraud_rate": 1.0
+        }
+      ],
+      "hard_negative_fpr": 0.03189792663476874,
+      "hard_negative_unknown": 0.0,
+      "conformal_test": {
+        "coverage_fraud": 1.0,
+        "coverage_normal": 0.9026548672566371,
+        "unknown_rate": 0.8434343434343434,
+        "accuracy_when_decided": 0.6451612903225806,
+        "f1_with_unknown": 0.33043478260869563,
+        "hard_negative_fpr": 0.006379585326953748
+      },
+      "weights": {
+        "text_logit": 0.0,
+        "text_missing": 0.0,
+        "ocr_logit": 0.0,
+        "ocr_missing": -1.139773455702283,
+        "off_platform_contact": 0.32538462736568624,
+        "short_link": 0.0,
+        "guaranteed_return": 0.0,
+        "investment_lure": 0.886213896843955,
+        "crypto_or_payment": 0.0,
+        "urgency": 0.5217253596986535,
+        "free_giveaway": 0.9371895649717353,
+        "job_lure": 0.0,
+        "impersonation_claim": 0.22169949605004033,
+        "verified_badge": 0.0,
+        "throwaway_profile": 1.6511968086967905,
+        "large_audience": -0.7653733974687293,
+        "random_digit_handle": 0.09858425745799092,
+        "simplified_chinese": 0.008001505839292936,
+        "llm_tactic_count": 1.2841343345450766,
+        "llm_solicitation": 0.9272505200614535,
+        "llm_addresses_reader": 0.09828505226734474,
+        "llm_risk": 1.1397387223645565,
+        "llm_benign_act": -0.11789843053831073,
+        "llm_missing": 0.029319619414795543
+      }
+    },
+    {
+      "name": "lr_full",
+      "label_zh": "+ 影像鑑識（完整）",
+      "official_test": {
+        "n": 198,
+        "tp": 29,
+        "fp": 16,
+        "tn": 97,
+        "fn": 56,
+        "unknown": 0,
+        "precision": 0.6444444444444445,
+        "recall": 0.3411764705882353,
+        "f1": 0.4461538461538462,
+        "fpr": 0.1415929203539823,
+        "accuracy": 0.6363636363636364,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.3333333333333333,
+          0.5454545454545454
+        ],
+        "fpr_95ci": [
+          0.06666666666666667,
+          0.2184873949579832
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 17,
+          "fp": 5,
+          "tn": 47,
+          "fn": 39,
+          "unknown": 0,
+          "precision": 0.7727272727272727,
+          "recall": 0.30357142857142855,
+          "f1": 0.4358974358974359,
+          "fpr": 0.09615384615384616,
+          "accuracy": 0.5925925925925926,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 8,
+          "fp": 7,
+          "tn": 27,
+          "fn": 12,
+          "unknown": 0,
+          "precision": 0.5333333333333333,
+          "recall": 0.4,
+          "f1": 0.45714285714285713,
+          "fpr": 0.20588235294117646,
+          "accuracy": 0.6481481481481481,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 4,
+          "fp": 2,
+          "tn": 16,
+          "fn": 5,
+          "unknown": 0,
+          "precision": 0.6666666666666666,
+          "recall": 0.4444444444444444,
+          "f1": 0.5333333333333333,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.7407407407407407,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 2,
+          "tn": 7,
+          "fn": 0,
+          "unknown": 0,
+          "precision": 0.0,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.2222222222222222,
+          "accuracy": 0.7777777777777778,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 12,
+          "fp": 11,
+          "tn": 50,
+          "fn": 17,
+          "unknown": 0,
+          "precision": 0.5217391304347826,
+          "recall": 0.41379310344827586,
+          "f1": 0.46153846153846156,
+          "fpr": 0.18032786885245902,
+          "accuracy": 0.6888888888888889,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.5856324830817282,
+      "calibration": {
+        "brier": 0.2291231770000183,
+        "log_loss": 0.6456088177971203,
+        "ece": 0.09483076243231792
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 1,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 2,
+          "count": 1,
+          "weight": 1.0,
+          "mean_score": 0.2379905335871566,
+          "observed_fraud_rate": 0.0
+        },
+        {
+          "bin": 3,
+          "count": 88,
+          "weight": 88.0,
+          "mean_score": 0.38975612100046514,
+          "observed_fraud_rate": 0.4090909090909091
+        },
+        {
+          "bin": 4,
+          "count": 64,
+          "weight": 64.0,
+          "mean_score": 0.4447059936913307,
+          "observed_fraud_rate": 0.3125
+        },
+        {
+          "bin": 5,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.5559514207060834,
+          "observed_fraud_rate": 0.16666666666666666
+        },
+        {
+          "bin": 6,
+          "count": 14,
+          "weight": 14.0,
+          "mean_score": 0.6613720093548408,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 7,
+          "count": 10,
+          "weight": 10.0,
+          "mean_score": 0.7472644734008462,
+          "observed_fraud_rate": 0.9
+        },
+        {
+          "bin": 8,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.8179119670001124,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 9,
+          "count": 9,
+          "weight": 9.0,
+          "mean_score": 0.961543138154325,
+          "observed_fraud_rate": 1.0
+        }
+      ],
+      "hard_negative_fpr": 0.03668261562998405,
+      "hard_negative_unknown": 0.0,
+      "conformal_test": {
+        "coverage_fraud": 1.0,
+        "coverage_normal": 0.911504424778761,
+        "unknown_rate": 0.8181818181818181,
+        "accuracy_when_decided": 0.7222222222222222,
+        "f1_with_unknown": 0.4166666666666667,
+        "hard_negative_fpr": 0.004784688995215311
+      },
+      "weights": {
+        "text_logit": 0.0,
+        "text_missing": 0.0,
+        "ocr_logit": 0.0,
+        "ocr_missing": -1.210879825576825,
+        "off_platform_contact": 0.45468791017957644,
+        "short_link": 0.0,
+        "guaranteed_return": 0.0,
+        "investment_lure": 0.9072276505444976,
+        "crypto_or_payment": 0.0,
+        "urgency": 0.5551313945642905,
+        "free_giveaway": 0.9227606854001229,
+        "job_lure": 0.0,
+        "impersonation_claim": 0.23818617201918404,
+        "verified_badge": 0.0,
+        "throwaway_profile": 1.6606537047570937,
+        "large_audience": -0.7153906145351558,
+        "random_digit_handle": 0.2082072991693655,
+        "simplified_chinese": 0.1076055114320877,
+        "llm_tactic_count": 1.330107191311667,
+        "llm_solicitation": 0.6304925817321998,
+        "llm_addresses_reader": 0.08849349195199001,
+        "llm_risk": 0.6733997553856966,
+        "llm_benign_act": -0.22254330874226017,
+        "llm_missing": -0.06537855608685887,
+        "image_known_scam_match": 3.6848049422575686,
+        "image_brand_mismatch": 0.0,
+        "image_editor_tag": 0.0
+      }
+    },
+    {
+      "name": "lr_no_macbert",
+      "label_zh": "不含 MacBERT（規則+LLM+影像）",
+      "official_test": {
+        "n": 198,
+        "tp": 24,
+        "fp": 12,
+        "tn": 101,
+        "fn": 61,
+        "unknown": 0,
+        "precision": 0.6666666666666666,
+        "recall": 0.2823529411764706,
+        "f1": 0.39669421487603307,
+        "fpr": 0.10619469026548672,
+        "accuracy": 0.6313131313131313,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.27350427350427353,
+          0.512
+        ],
+        "fpr_95ci": [
+          0.0423728813559322,
+          0.1826086956521739
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 16,
+          "fp": 3,
+          "tn": 49,
+          "fn": 40,
+          "unknown": 0,
+          "precision": 0.8421052631578947,
+          "recall": 0.2857142857142857,
+          "f1": 0.4266666666666667,
+          "fpr": 0.057692307692307696,
+          "accuracy": 0.6018518518518519,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 6,
+          "fp": 6,
+          "tn": 28,
+          "fn": 14,
+          "unknown": 0,
+          "precision": 0.5,
+          "recall": 0.3,
+          "f1": 0.375,
+          "fpr": 0.17647058823529413,
+          "accuracy": 0.6296296296296297,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 2,
+          "fp": 2,
+          "tn": 16,
+          "fn": 7,
+          "unknown": 0,
+          "precision": 0.5,
+          "recall": 0.2222222222222222,
+          "f1": 0.3076923076923077,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.6666666666666666,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 1,
+          "tn": 8,
+          "fn": 0,
+          "unknown": 0,
+          "precision": 0.0,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.8888888888888888,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 8,
+          "fp": 9,
+          "tn": 52,
+          "fn": 21,
+          "unknown": 0,
+          "precision": 0.47058823529411764,
+          "recall": 0.27586206896551724,
+          "f1": 0.34782608695652173,
+          "fpr": 0.14754098360655737,
+          "accuracy": 0.6666666666666666,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.5941176470588235,
+      "calibration": {
+        "brier": 0.2280692656019954,
+        "log_loss": 0.6427134295723743,
+        "ece": 0.0721563619893161
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 1,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 2,
+          "count": 1,
+          "weight": 1.0,
+          "mean_score": 0.2421734965638556,
+          "observed_fraud_rate": 0.0
+        },
+        {
+          "bin": 3,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 4,
+          "count": 161,
+          "weight": 161.0,
+          "mean_score": 0.4330813131307728,
+          "observed_fraud_rate": 0.37888198757763975
+        },
+        {
+          "bin": 5,
+          "count": 9,
+          "weight": 9.0,
+          "mean_score": 0.5427413332691308,
+          "observed_fraud_rate": 0.2222222222222222
+        },
+        {
+          "bin": 6,
+          "count": 10,
+          "weight": 10.0,
+          "mean_score": 0.6474888297683477,
+          "observed_fraud_rate": 0.7
+        },
+        {
+          "bin": 7,
+          "count": 3,
+          "weight": 3.0,
+          "mean_score": 0.7673992545471787,
+          "observed_fraud_rate": 1.0
+        },
+        {
+          "bin": 8,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.824679852092022,
+          "observed_fraud_rate": 0.6666666666666666
+        },
+        {
+          "bin": 9,
+          "count": 8,
+          "weight": 8.0,
+          "mean_score": 0.9671212859228735,
+          "observed_fraud_rate": 1.0
+        }
+      ],
+      "hard_negative_fpr": 0.0685805422647528,
+      "hard_negative_unknown": 0.0,
+      "conformal_test": {
+        "coverage_fraud": 1.0,
+        "coverage_normal": 0.9646017699115044,
+        "unknown_rate": 0.8787878787878788,
+        "accuracy_when_decided": 0.8333333333333334,
+        "f1_with_unknown": 0.35185185185185186,
+        "hard_negative_fpr": 0.004784688995215311
+      },
+      "weights": {
+        "off_platform_contact": 0.4342436808657709,
+        "short_link": 0.0,
+        "guaranteed_return": 0.0,
+        "investment_lure": 0.8437427008251714,
+        "crypto_or_payment": 0.0,
+        "urgency": 0.6297754566302072,
+        "free_giveaway": 0.8615828077269625,
+        "job_lure": 0.0,
+        "impersonation_claim": 0.4802607643643155,
+        "verified_badge": 0.0,
+        "throwaway_profile": 1.5952267012585868,
+        "large_audience": -0.7392571351233541,
+        "random_digit_handle": 0.14760384366165047,
+        "simplified_chinese": 0.1823645080209179,
+        "llm_tactic_count": 1.2120150298521144,
+        "llm_solicitation": 0.611742867804029,
+        "llm_addresses_reader": 0.00874447741688584,
+        "llm_risk": 0.8175370825794759,
+        "llm_benign_act": -0.3408009040005542,
+        "llm_missing": -0.15126664569223416,
+        "image_known_scam_match": 3.6399952409547476,
+        "image_brand_mismatch": 0.0,
+        "image_editor_tag": 0.0
+      }
+    },
+    {
+      "name": "lr_full_without_hard_negatives",
+      "label_zh": "完整（訓練不含困難負樣本）",
+      "official_test": {
+        "n": 198,
+        "tp": 30,
+        "fp": 16,
+        "tn": 97,
+        "fn": 55,
+        "unknown": 0,
+        "precision": 0.6521739130434783,
+        "recall": 0.35294117647058826,
+        "f1": 0.4580152671755725,
+        "fpr": 0.1415929203539823,
+        "accuracy": 0.6414141414141414,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.3401360544217687,
+          0.5619834710743802
+        ],
+        "fpr_95ci": [
+          0.06666666666666667,
+          0.2184873949579832
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 18,
+          "fp": 5,
+          "tn": 47,
+          "fn": 38,
+          "unknown": 0,
+          "precision": 0.782608695652174,
+          "recall": 0.32142857142857145,
+          "f1": 0.45569620253164556,
+          "fpr": 0.09615384615384616,
+          "accuracy": 0.6018518518518519,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 8,
+          "fp": 7,
+          "tn": 27,
+          "fn": 12,
+          "unknown": 0,
+          "precision": 0.5333333333333333,
+          "recall": 0.4,
+          "f1": 0.45714285714285713,
+          "fpr": 0.20588235294117646,
+          "accuracy": 0.6481481481481481,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 4,
+          "fp": 2,
+          "tn": 16,
+          "fn": 5,
+          "unknown": 0,
+          "precision": 0.6666666666666666,
+          "recall": 0.4444444444444444,
+          "f1": 0.5333333333333333,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.7407407407407407,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 2,
+          "tn": 7,
+          "fn": 0,
+          "unknown": 0,
+          "precision": 0.0,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.2222222222222222,
+          "accuracy": 0.7777777777777778,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 12,
+          "fp": 11,
+          "tn": 50,
+          "fn": 17,
+          "unknown": 0,
+          "precision": 0.5217391304347826,
+          "recall": 0.41379310344827586,
+          "f1": 0.46153846153846156,
+          "fpr": 0.18032786885245902,
+          "accuracy": 0.6888888888888889,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.618844351900052,
+      "calibration": {
+        "brier": 0.22470084555427627,
+        "log_loss": 0.6367056219479663,
+        "ece": 0.05869735583475682
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 1,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 2,
+          "count": 1,
+          "weight": 1.0,
+          "mean_score": 0.29202818368310396,
+          "observed_fraud_rate": 0.0
+        },
+        {
+          "bin": 3,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 4,
+          "count": 151,
+          "weight": 151.0,
+          "mean_score": 0.419007944233783,
+          "observed_fraud_rate": 0.36423841059602646
+        },
+        {
+          "bin": 5,
+          "count": 9,
+          "weight": 9.0,
+          "mean_score": 0.542284821346664,
+          "observed_fraud_rate": 0.3333333333333333
+        },
+        {
+          "bin": 6,
+          "count": 18,
+          "weight": 18.0,
+          "mean_score": 0.6260739412744837,
+          "observed_fraud_rate": 0.6111111111111112
+        },
+        {
+          "bin": 7,
+          "count": 10,
+          "weight": 10.0,
+          "mean_score": 0.7280507027266705,
+          "observed_fraud_rate": 0.7
+        },
+        {
+          "bin": 8,
+          "count": 1,
+          "weight": 1.0,
+          "mean_score": 0.8414594857433286,
+          "observed_fraud_rate": 1.0
+        },
+        {
+          "bin": 9,
+          "count": 8,
+          "weight": 8.0,
+          "mean_score": 0.941136648035819,
+          "observed_fraud_rate": 1.0
+        }
+      ],
+      "hard_negative_fpr": 0.0685805422647528,
+      "hard_negative_unknown": 0.0
+    },
+    {
+      "name": "lr_full_llm_off",
+      "label_zh": "完整（推論時未啟用 LLM）",
+      "official_test": {
+        "n": 198,
+        "tp": 27,
+        "fp": 15,
+        "tn": 98,
+        "fn": 58,
+        "unknown": 0,
+        "precision": 0.6428571428571429,
+        "recall": 0.3176470588235294,
+        "f1": 0.4251968503937008,
+        "fpr": 0.13274336283185842,
+        "accuracy": 0.6313131313131313,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.3140495867768595,
+          0.5321100917431193
+        ],
+        "fpr_95ci": [
+          0.06306306306306306,
+          0.21052631578947367
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 16,
+          "fp": 4,
+          "tn": 48,
+          "fn": 40,
+          "unknown": 0,
+          "precision": 0.8,
+          "recall": 0.2857142857142857,
+          "f1": 0.42105263157894735,
+          "fpr": 0.07692307692307693,
+          "accuracy": 0.5925925925925926,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 7,
+          "fp": 7,
+          "tn": 27,
+          "fn": 13,
+          "unknown": 0,
+          "precision": 0.5,
+          "recall": 0.35,
+          "f1": 0.4117647058823529,
+          "fpr": 0.20588235294117646,
+          "accuracy": 0.6296296296296297,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 4,
+          "fp": 2,
+          "tn": 16,
+          "fn": 5,
+          "unknown": 0,
+          "precision": 0.6666666666666666,
+          "recall": 0.4444444444444444,
+          "f1": 0.5333333333333333,
+          "fpr": 0.1111111111111111,
+          "accuracy": 0.7407407407407407,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 2,
+          "tn": 7,
+          "fn": 0,
+          "unknown": 0,
+          "precision": 0.0,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.2222222222222222,
+          "accuracy": 0.7777777777777778,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 11,
+          "fp": 11,
+          "tn": 50,
+          "fn": 18,
+          "unknown": 0,
+          "precision": 0.5,
+          "recall": 0.3793103448275862,
+          "f1": 0.43137254901960786,
+          "fpr": 0.18032786885245902,
+          "accuracy": 0.6777777777777778,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.599167100468506,
+      "calibration": {
+        "brier": 0.22876440923185434,
+        "log_loss": 0.6458229544234397,
+        "ece": 0.08359409528326468
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 1,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 2,
+          "count": 1,
+          "weight": 1.0,
+          "mean_score": 0.26765295136436756,
+          "observed_fraud_rate": 0.0
+        },
+        {
+          "bin": 3,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        },
+        {
+          "bin": 4,
+          "count": 155,
+          "weight": 155.0,
+          "mean_score": 0.43028359076054606,
+          "observed_fraud_rate": 0.3741935483870968
+        },
+        {
+          "bin": 5,
+          "count": 7,
+          "weight": 7.0,
+          "mean_score": 0.547879735112814,
+          "observed_fraud_rate": 0.14285714285714285
+        },
+        {
+          "bin": 6,
+          "count": 8,
+          "weight": 8.0,
+          "mean_score": 0.6588234953247022,
+          "observed_fraud_rate": 0.875
+        },
+        {
+          "bin": 7,
+          "count": 19,
+          "weight": 19.0,
+          "mean_score": 0.7434373438576055,
+          "observed_fraud_rate": 0.631578947368421
+        },
+        {
+          "bin": 8,
+          "count": 2,
+          "weight": 2.0,
+          "mean_score": 0.8305099444975714,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 9,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.9601463764407213,
+          "observed_fraud_rate": 1.0
+        }
+      ],
+      "hard_negative_fpr": 0.03508771929824561,
+      "hard_negative_unknown": 0.0
+    },
+    {
+      "name": "macbert_ft_argmax",
+      "label_zh": "MacBERT 社群領域微調（argmax）",
+      "official_test": {
+        "n": 198,
+        "tp": 55,
+        "fp": 21,
+        "tn": 92,
+        "fn": 30,
+        "unknown": 0,
+        "precision": 0.7236842105263158,
+        "recall": 0.6470588235294118,
+        "f1": 0.6832298136645962,
+        "fpr": 0.18584070796460178,
+        "accuracy": 0.7424242424242424,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.5730337078651685,
+          0.7814569536423841
+        ],
+        "fpr_95ci": [
+          0.11538461538461539,
+          0.2608695652173913
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 34,
+          "fp": 9,
+          "tn": 43,
+          "fn": 22,
+          "unknown": 0,
+          "precision": 0.7906976744186046,
+          "recall": 0.6071428571428571,
+          "f1": 0.6868686868686869,
+          "fpr": 0.17307692307692307,
+          "accuracy": 0.7129629629629629,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 14,
+          "fp": 6,
+          "tn": 28,
+          "fn": 6,
+          "unknown": 0,
+          "precision": 0.7,
+          "recall": 0.7,
+          "f1": 0.7,
+          "fpr": 0.17647058823529413,
+          "accuracy": 0.7777777777777778,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 7,
+          "fp": 6,
+          "tn": 12,
+          "fn": 2,
+          "unknown": 0,
+          "precision": 0.5384615384615384,
+          "recall": 0.7777777777777778,
+          "f1": 0.6363636363636364,
+          "fpr": 0.3333333333333333,
+          "accuracy": 0.7037037037037037,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 0,
+          "tn": 9,
+          "fn": 0,
+          "unknown": 0,
+          "precision": null,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 1.0,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 21,
+          "fp": 12,
+          "tn": 49,
+          "fn": 8,
+          "unknown": 0,
+          "precision": 0.6363636363636364,
+          "recall": 0.7241379310344828,
+          "f1": 0.6774193548387096,
+          "fpr": 0.19672131147540983,
+          "accuracy": 0.7777777777777778,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.8337324310255075,
+      "calibration": {
+        "brier": 0.17229794830286707,
+        "log_loss": 0.5133870949988594,
+        "ece": 0.0895081246036547
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 55,
+          "weight": 55.0,
+          "mean_score": 0.03760107442397963,
+          "observed_fraud_rate": 0.09090909090909091
+        },
+        {
+          "bin": 1,
+          "count": 26,
+          "weight": 26.0,
+          "mean_score": 0.14485576548255408,
+          "observed_fraud_rate": 0.34615384615384615
+        },
+        {
+          "bin": 2,
+          "count": 16,
+          "weight": 16.0,
+          "mean_score": 0.24380497261881828,
+          "observed_fraud_rate": 0.375
+        },
+        {
+          "bin": 3,
+          "count": 12,
+          "weight": 12.0,
+          "mean_score": 0.35401929169893265,
+          "observed_fraud_rate": 0.4166666666666667
+        },
+        {
+          "bin": 4,
+          "count": 13,
+          "weight": 13.0,
+          "mean_score": 0.44481764619167036,
+          "observed_fraud_rate": 0.38461538461538464
+        },
+        {
+          "bin": 5,
+          "count": 11,
+          "weight": 11.0,
+          "mean_score": 0.5547954711047086,
+          "observed_fraud_rate": 0.45454545454545453
+        },
+        {
+          "bin": 6,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.6276263395945231,
+          "observed_fraud_rate": 0.3333333333333333
+        },
+        {
+          "bin": 7,
+          "count": 17,
+          "weight": 17.0,
+          "mean_score": 0.7441625384723439,
+          "observed_fraud_rate": 0.5882352941176471
+        },
+        {
+          "bin": 8,
+          "count": 24,
+          "weight": 24.0,
+          "mean_score": 0.8587639803687731,
+          "observed_fraud_rate": 0.875
+        },
+        {
+          "bin": 9,
+          "count": 18,
+          "weight": 18.0,
+          "mean_score": 0.9452479713492923,
+          "observed_fraud_rate": 0.9444444444444444
+        }
+      ],
+      "hard_negative_fpr": 0.10207336523125997,
+      "hard_negative_unknown": 0.0
+    },
+    {
+      "name": "macbert_ft_old_recipe_argmax",
+      "label_zh": "MacBERT 社群微調・舊作法（只取最新 900 筆詐騙，Threads 為主）",
+      "official_test": {
+        "n": 198,
+        "tp": 31,
+        "fp": 4,
+        "tn": 109,
+        "fn": 54,
+        "unknown": 0,
+        "precision": 0.8857142857142857,
+        "recall": 0.36470588235294116,
+        "f1": 0.5166666666666667,
+        "fpr": 0.035398230088495575,
+        "accuracy": 0.7070707070707071,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.3838383838383838,
+          0.6349206349206349
+        ],
+        "fpr_95ci": [
+          0.007874015748031496,
+          0.07142857142857142
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 26,
+          "fp": 4,
+          "tn": 48,
+          "fn": 30,
+          "unknown": 0,
+          "precision": 0.8666666666666667,
+          "recall": 0.4642857142857143,
+          "f1": 0.6046511627906976,
+          "fpr": 0.07692307692307693,
+          "accuracy": 0.6851851851851852,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 2,
+          "fp": 0,
+          "tn": 34,
+          "fn": 18,
+          "unknown": 0,
+          "precision": 1.0,
+          "recall": 0.1,
+          "f1": 0.18181818181818182,
+          "fpr": 0.0,
+          "accuracy": 0.6666666666666666,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 3,
+          "fp": 0,
+          "tn": 18,
+          "fn": 6,
+          "unknown": 0,
+          "precision": 1.0,
+          "recall": 0.3333333333333333,
+          "f1": 0.5,
+          "fpr": 0.0,
+          "accuracy": 0.7777777777777778,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 0,
+          "tn": 9,
+          "fn": 0,
+          "unknown": 0,
+          "precision": null,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 1.0,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 5,
+          "fp": 0,
+          "tn": 61,
+          "fn": 24,
+          "unknown": 0,
+          "precision": 1.0,
+          "recall": 0.1724137931034483,
+          "f1": 0.29411764705882354,
+          "fpr": 0.0,
+          "accuracy": 0.7333333333333333,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.7416970327954191,
+      "calibration": {
+        "brier": 0.20975323294537943,
+        "log_loss": 0.6112975678024211,
+        "ece": 0.12474296304086845
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 20,
+          "weight": 20.0,
+          "mean_score": 0.07309597339481115,
+          "observed_fraud_rate": 0.05
+        },
+        {
+          "bin": 1,
+          "count": 41,
+          "weight": 41.0,
+          "mean_score": 0.14383437266437019,
+          "observed_fraud_rate": 0.2682926829268293
+        },
+        {
+          "bin": 2,
+          "count": 49,
+          "weight": 49.0,
+          "mean_score": 0.24539912659294752,
+          "observed_fraud_rate": 0.42857142857142855
+        },
+        {
+          "bin": 3,
+          "count": 33,
+          "weight": 33.0,
+          "mean_score": 0.3436813706701452,
+          "observed_fraud_rate": 0.3333333333333333
+        },
+        {
+          "bin": 4,
+          "count": 20,
+          "weight": 20.0,
+          "mean_score": 0.44055027067661284,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 5,
+          "count": 16,
+          "weight": 16.0,
+          "mean_score": 0.5397493690252304,
+          "observed_fraud_rate": 0.8125
+        },
+        {
+          "bin": 6,
+          "count": 10,
+          "weight": 10.0,
+          "mean_score": 0.6631916522979736,
+          "observed_fraud_rate": 0.9
+        },
+        {
+          "bin": 7,
+          "count": 5,
+          "weight": 5.0,
+          "mean_score": 0.7471544146537781,
+          "observed_fraud_rate": 1.0
+        },
+        {
+          "bin": 8,
+          "count": 4,
+          "weight": 4.0,
+          "mean_score": 0.8419619053602219,
+          "observed_fraud_rate": 1.0
+        },
+        {
+          "bin": 9,
+          "count": 0,
+          "weight": 0,
+          "mean_score": null,
+          "observed_fraud_rate": null
+        }
+      ],
+      "hard_negative_fpr": null,
+      "hard_negative_unknown": null
+    },
+    {
+      "name": "lr_full_ft",
+      "label_zh": "完整 + 微調 MacBERT",
+      "official_test": {
+        "n": 198,
+        "tp": 54,
+        "fp": 20,
+        "tn": 93,
+        "fn": 31,
+        "unknown": 0,
+        "precision": 0.7297297297297297,
+        "recall": 0.6352941176470588,
+        "f1": 0.6792452830188679,
+        "fpr": 0.17699115044247787,
+        "accuracy": 0.7424242424242424,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.5714285714285714,
+          0.7764705882352941
+        ],
+        "fpr_95ci": [
+          0.10852713178294573,
+          0.25
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 34,
+          "fp": 8,
+          "tn": 44,
+          "fn": 22,
+          "unknown": 0,
+          "precision": 0.8095238095238095,
+          "recall": 0.6071428571428571,
+          "f1": 0.6938775510204082,
+          "fpr": 0.15384615384615385,
+          "accuracy": 0.7222222222222222,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 13,
+          "fp": 6,
+          "tn": 28,
+          "fn": 7,
+          "unknown": 0,
+          "precision": 0.6842105263157895,
+          "recall": 0.65,
+          "f1": 0.6666666666666666,
+          "fpr": 0.17647058823529413,
+          "accuracy": 0.7592592592592593,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 7,
+          "fp": 6,
+          "tn": 12,
+          "fn": 2,
+          "unknown": 0,
+          "precision": 0.5384615384615384,
+          "recall": 0.7777777777777778,
+          "f1": 0.6363636363636364,
+          "fpr": 0.3333333333333333,
+          "accuracy": 0.7037037037037037,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 0,
+          "tn": 9,
+          "fn": 0,
+          "unknown": 0,
+          "precision": null,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 1.0,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 20,
+          "fp": 12,
+          "tn": 49,
+          "fn": 9,
+          "unknown": 0,
+          "precision": 0.625,
+          "recall": 0.6896551724137931,
+          "f1": 0.6557377049180327,
+          "fpr": 0.19672131147540983,
+          "accuracy": 0.7666666666666667,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.8555960437272254,
+      "calibration": {
+        "brier": 0.17664680367628047,
+        "log_loss": 0.5599390642367416,
+        "ece": 0.14247135011598078
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 87,
+          "weight": 87.0,
+          "mean_score": 0.023669738912712398,
+          "observed_fraud_rate": 0.14942528735632185
+        },
+        {
+          "bin": 1,
+          "count": 10,
+          "weight": 10.0,
+          "mean_score": 0.15736912927577706,
+          "observed_fraud_rate": 0.4
+        },
+        {
+          "bin": 2,
+          "count": 11,
+          "weight": 11.0,
+          "mean_score": 0.26715601194278,
+          "observed_fraud_rate": 0.5454545454545454
+        },
+        {
+          "bin": 3,
+          "count": 9,
+          "weight": 9.0,
+          "mean_score": 0.3416167774012941,
+          "observed_fraud_rate": 0.4444444444444444
+        },
+        {
+          "bin": 4,
+          "count": 7,
+          "weight": 7.0,
+          "mean_score": 0.4561364544978077,
+          "observed_fraud_rate": 0.5714285714285714
+        },
+        {
+          "bin": 5,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.5456226578736542,
+          "observed_fraud_rate": 0.16666666666666666
+        },
+        {
+          "bin": 6,
+          "count": 4,
+          "weight": 4.0,
+          "mean_score": 0.6468405849925156,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 7,
+          "count": 11,
+          "weight": 11.0,
+          "mean_score": 0.7659059480684405,
+          "observed_fraud_rate": 0.6363636363636364
+        },
+        {
+          "bin": 8,
+          "count": 12,
+          "weight": 12.0,
+          "mean_score": 0.8510392315319889,
+          "observed_fraud_rate": 0.5
+        },
+        {
+          "bin": 9,
+          "count": 41,
+          "weight": 41.0,
+          "mean_score": 0.9646335052742957,
+          "observed_fraud_rate": 0.926829268292683
+        }
+      ],
+      "hard_negative_fpr": 0.0861244019138756,
+      "hard_negative_unknown": 0.0,
+      "conformal_test": {
+        "coverage_fraud": 0.9411764705882353,
+        "coverage_normal": 0.9380530973451328,
+        "unknown_rate": 0.38888888888888884,
+        "accuracy_when_decided": 0.9008264462809917,
+        "f1_with_unknown": 0.6470588235294118
+      }
+    },
+    {
+      "name": "lr_full_ft_unsigned",
+      "label_zh": "完整 + 微調（無符號限制）",
+      "official_test": {
+        "n": 198,
+        "tp": 54,
+        "fp": 20,
+        "tn": 93,
+        "fn": 31,
+        "unknown": 0,
+        "precision": 0.7297297297297297,
+        "recall": 0.6352941176470588,
+        "f1": 0.6792452830188679,
+        "fpr": 0.17699115044247787,
+        "accuracy": 0.7424242424242424,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.5714285714285714,
+          0.7757575757575758
+        ],
+        "fpr_95ci": [
+          0.10909090909090909,
+          0.25
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 34,
+          "fp": 9,
+          "tn": 43,
+          "fn": 22,
+          "unknown": 0,
+          "precision": 0.7906976744186046,
+          "recall": 0.6071428571428571,
+          "f1": 0.6868686868686869,
+          "fpr": 0.17307692307692307,
+          "accuracy": 0.7129629629629629,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 13,
+          "fp": 5,
+          "tn": 29,
+          "fn": 7,
+          "unknown": 0,
+          "precision": 0.7222222222222222,
+          "recall": 0.65,
+          "f1": 0.6842105263157895,
+          "fpr": 0.14705882352941177,
+          "accuracy": 0.7777777777777778,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 7,
+          "fp": 6,
+          "tn": 12,
+          "fn": 2,
+          "unknown": 0,
+          "precision": 0.5384615384615384,
+          "recall": 0.7777777777777778,
+          "f1": 0.6363636363636364,
+          "fpr": 0.3333333333333333,
+          "accuracy": 0.7037037037037037,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 0,
+          "tn": 9,
+          "fn": 0,
+          "unknown": 0,
+          "precision": null,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "accuracy": 1.0,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 20,
+          "fp": 11,
+          "tn": 50,
+          "fn": 9,
+          "unknown": 0,
+          "precision": 0.6451612903225806,
+          "recall": 0.6896551724137931,
+          "f1": 0.6666666666666666,
+          "fpr": 0.18032786885245902,
+          "accuracy": 0.7777777777777778,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.8544508068714212,
+      "calibration": {
+        "brier": 0.1788663866322862,
+        "log_loss": 0.566265814543486,
+        "ece": 0.1441363074829018
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 86,
+          "weight": 86.0,
+          "mean_score": 0.022918103964245626,
+          "observed_fraud_rate": 0.1511627906976744
+        },
+        {
+          "bin": 1,
+          "count": 11,
+          "weight": 11.0,
+          "mean_score": 0.13810734752276896,
+          "observed_fraud_rate": 0.36363636363636365
+        },
+        {
+          "bin": 2,
+          "count": 7,
+          "weight": 7.0,
+          "mean_score": 0.24250239044827596,
+          "observed_fraud_rate": 0.5714285714285714
+        },
+        {
+          "bin": 3,
+          "count": 15,
+          "weight": 15.0,
+          "mean_score": 0.33766511920269576,
+          "observed_fraud_rate": 0.4666666666666667
+        },
+        {
+          "bin": 4,
+          "count": 5,
+          "weight": 5.0,
+          "mean_score": 0.4523501188784886,
+          "observed_fraud_rate": 0.6
+        },
+        {
+          "bin": 5,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.562164191454586,
+          "observed_fraud_rate": 0.16666666666666666
+        },
+        {
+          "bin": 6,
+          "count": 5,
+          "weight": 5.0,
+          "mean_score": 0.6652150934707104,
+          "observed_fraud_rate": 0.4
+        },
+        {
+          "bin": 7,
+          "count": 10,
+          "weight": 10.0,
+          "mean_score": 0.7534401839628057,
+          "observed_fraud_rate": 0.7
+        },
+        {
+          "bin": 8,
+          "count": 13,
+          "weight": 13.0,
+          "mean_score": 0.856591397424467,
+          "observed_fraud_rate": 0.5384615384615384
+        },
+        {
+          "bin": 9,
+          "count": 40,
+          "weight": 40.0,
+          "mean_score": 0.9671055034658439,
+          "observed_fraud_rate": 0.925
+        }
+      ],
+      "hard_negative_fpr": 0.09090909090909091,
+      "hard_negative_unknown": 0.0,
+      "weights": {
+        "text_logit": 6.321821596615407,
+        "text_missing": 0.0,
+        "ocr_logit": -0.3745264585806421,
+        "ocr_missing": -1.554205807559693,
+        "off_platform_contact": -0.2630541793903726,
+        "short_link": -1.4401225532662614,
+        "guaranteed_return": 0.016547475908824293,
+        "investment_lure": -0.6031659388199253,
+        "crypto_or_payment": -0.03888749632370038,
+        "urgency": 0.5989680002145151,
+        "free_giveaway": -0.4177776625964989,
+        "job_lure": -0.10594371555596079,
+        "impersonation_claim": 2.7742334952503716,
+        "verified_badge": 0.0,
+        "throwaway_profile": 1.312405172546493,
+        "large_audience": -0.013552704193741157,
+        "random_digit_handle": 0.08687659438961365,
+        "simplified_chinese": -0.5389597667073832,
+        "llm_tactic_count": 0.48815919786773326,
+        "llm_solicitation": 0.3741511178179055,
+        "llm_addresses_reader": -0.6392580088965487,
+        "llm_risk": 0.6048903683428056,
+        "llm_benign_act": 0.045843377302597396,
+        "llm_missing": -0.012030284306971327,
+        "image_known_scam_match": 5.275746292101317,
+        "image_brand_mismatch": 0.0,
+        "image_editor_tag": 0.0
+      }
+    },
+    {
+      "name": "lr_full_unsigned",
+      "label_zh": "完整（無符號限制）",
+      "official_test": {
+        "n": 198,
+        "tp": 33,
+        "fp": 24,
+        "tn": 89,
+        "fn": 52,
+        "unknown": 0,
+        "precision": 0.5789473684210527,
+        "recall": 0.38823529411764707,
+        "f1": 0.4647887323943662,
+        "fpr": 0.21238938053097345,
+        "accuracy": 0.6161616161616161,
+        "unknown_rate": 0.0,
+        "f1_95ci": [
+          0.3157894736842105,
+          0.5962732919254659
+        ],
+        "fpr_95ci": [
+          0.13274336283185842,
+          0.2956521739130435
+        ]
+      },
+      "by_platform": {
+        "Threads": {
+          "n": 108,
+          "tp": 22,
+          "fp": 9,
+          "tn": 43,
+          "fn": 34,
+          "unknown": 0,
+          "precision": 0.7096774193548387,
+          "recall": 0.39285714285714285,
+          "f1": 0.5057471264367817,
+          "fpr": 0.17307692307692307,
+          "accuracy": 0.6018518518518519,
+          "unknown_rate": 0.0
+        },
+        "Facebook": {
+          "n": 54,
+          "tp": 7,
+          "fp": 9,
+          "tn": 25,
+          "fn": 13,
+          "unknown": 0,
+          "precision": 0.4375,
+          "recall": 0.35,
+          "f1": 0.3888888888888889,
+          "fpr": 0.2647058823529412,
+          "accuracy": 0.5925925925925926,
+          "unknown_rate": 0.0
+        },
+        "一般網頁": {
+          "n": 27,
+          "tp": 4,
+          "fp": 4,
+          "tn": 14,
+          "fn": 5,
+          "unknown": 0,
+          "precision": 0.5,
+          "recall": 0.4444444444444444,
+          "f1": 0.47058823529411764,
+          "fpr": 0.2222222222222222,
+          "accuracy": 0.6666666666666666,
+          "unknown_rate": 0.0
+        },
+        "LINE／TikTok／IG／YT": {
+          "n": 9,
+          "tp": 0,
+          "fp": 2,
+          "tn": 7,
+          "fn": 0,
+          "unknown": 0,
+          "precision": 0.0,
+          "recall": null,
+          "f1": 0.0,
+          "fpr": 0.2222222222222222,
+          "accuracy": 0.7777777777777778,
+          "unknown_rate": 0.0
+        },
+        "other": {
+          "n": 90,
+          "tp": 11,
+          "fp": 15,
+          "tn": 46,
+          "fn": 18,
+          "unknown": 0,
+          "precision": 0.4230769230769231,
+          "recall": 0.3793103448275862,
+          "f1": 0.4,
+          "fpr": 0.2459016393442623,
+          "accuracy": 0.6333333333333333,
+          "unknown_rate": 0.0
+        }
+      },
+      "auc": 0.6239458615304528,
+      "calibration": {
+        "brier": 0.22746264269613484,
+        "log_loss": 0.6400549634143058,
+        "ece": 0.07973114366029194
+      },
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "count": 2,
+          "weight": 2.0,
+          "mean_score": 0.08540767882563485,
+          "observed_fraud_rate": 0.0
+        },
+        {
+          "bin": 1,
+          "count": 2,
+          "weight": 2.0,
+          "mean_score": 0.16962919530860596,
+          "observed_fraud_rate": 0.0
+        },
+        {
+          "bin": 2,
+          "count": 8,
+          "weight": 8.0,
+          "mean_score": 0.2524636684311591,
+          "observed_fraud_rate": 0.25
+        },
+        {
+          "bin": 3,
+          "count": 28,
+          "weight": 28.0,
+          "mean_score": 0.3679703112948098,
+          "observed_fraud_rate": 0.39285714285714285
+        },
+        {
+          "bin": 4,
+          "count": 101,
+          "weight": 101.0,
+          "mean_score": 0.4435785648976013,
+          "observed_fraud_rate": 0.38613861386138615
+        },
+        {
+          "bin": 5,
+          "count": 17,
+          "weight": 17.0,
+          "mean_score": 0.5227174132406335,
+          "observed_fraud_rate": 0.35294117647058826
+        },
+        {
+          "bin": 6,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.6563621746176784,
+          "observed_fraud_rate": 0.3333333333333333
+        },
+        {
+          "bin": 7,
+          "count": 19,
+          "weight": 19.0,
+          "mean_score": 0.7695822858201307,
+          "observed_fraud_rate": 0.631578947368421
+        },
+        {
+          "bin": 8,
+          "count": 6,
+          "weight": 6.0,
+          "mean_score": 0.8313738380014843,
+          "observed_fraud_rate": 0.6666666666666666
+        },
+        {
+          "bin": 9,
+          "count": 9,
+          "weight": 9.0,
+          "mean_score": 0.9639953911968038,
+          "observed_fraud_rate": 1.0
+        }
+      ],
+      "hard_negative_fpr": 0.03189792663476874,
+      "hard_negative_unknown": 0.0
+    }
+  ],
+  "limitations": [
+    "官方資料是民眾通報後經主管機關判定的案例，不是隨機抽樣；正常樣本多為「被懷疑但判定非詐騙」的廣告，比一般貼文更難。",
+    "訓練與測試採類別平衡權重；實際上線的詐騙盛行率遠低於此，可用 conformal.adjust_prior 換算。",
+    "通報網站遮蔽了原始網址，因此這份基準評估的是貼文文字＋圖片，不是完整的網址擷取流程。",
+    "PTT 困難負樣本是「推定正常」，未經官方判定，只用來量測誤報，不混入官方 F1。",
+    "原 MacBERT 的訓練資料未知，無法排除與通報資料的重疊。"
+  ],
+  "ood": {
+    "anti_fraud_E3_macbert": {
+      "official_test": {
+        "n": 198,
+        "flagged_rate": 0.010101010101010102,
+        "error_rate_flagged": 0.5,
+        "error_rate_unflagged": 0.3622448979591837
+      },
+      "hard_negative_test": {
+        "n": 627,
+        "flagged_rate": 0.001594896331738437,
+        "error_rate_flagged": 1.0,
+        "error_rate_unflagged": 0.03514376996805112
+      }
+    },
+    "macbert_social": {
+      "official_test": {
+        "n": 198,
+        "flagged_rate": 0.010101010101010102,
+        "error_rate_flagged": 0.0,
+        "error_rate_unflagged": 0.2602040816326531
+      },
+      "hard_negative_test": {
+        "n": 627,
+        "flagged_rate": 0.009569377990430622,
+        "error_rate_flagged": 0.0,
+        "error_rate_unflagged": 0.08695652173913043
+      }
+    }
+  },
+  "behavioral": {
+    "summary": {
+      "keyword_trap:Normal": {
+        "n": 20,
+        "macbert_raw_pass": 1.0,
+        "system_pass": 0.65,
+        "system_wrong": 0.05
+      },
+      "anti_fraud_awareness:Normal": {
+        "n": 8,
+        "macbert_raw_pass": 0.75,
+        "system_pass": 0.5,
+        "system_wrong": 0.125
+      },
+      "scam_positive:Fraud": {
+        "n": 8,
+        "macbert_raw_pass": 0.625,
+        "system_pass": 1.0,
+        "system_wrong": 0.0
+      },
+      "invariance_ui_padding:Fraud": {
+        "n": 3,
+        "macbert_raw_pass": 1.0,
+        "system_pass": 1.0,
+        "system_wrong": 0.0
+      },
+      "invariance_ui_padding:Normal": {
+        "n": 3,
+        "macbert_raw_pass": 0.6666666666666666,
+        "system_pass": 0.6666666666666666,
+        "system_wrong": 0.0
+      }
+    },
+    "rows": [
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "年薪約100萬的工程師，每天實際工作幾小時？",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.06637968868017197,
+        "system": "Unknown",
+        "system_score": 0.10423909788284853
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "學測模擬測驗成績出來了，大家覺得國文難嗎",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.005816101096570492,
+        "system": "Normal",
+        "system_score": 0.0009532792864881516
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "單身即地獄？聊聊你們怎麼度過情人節",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.006456288974732161,
+        "system": "Normal",
+        "system_score": 0.017525975275210406
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "新手想開始定期定額投資 ETF，該注意什麼？",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.014563124626874924,
+        "system": "Normal",
+        "system_score": 0.008710681293366296
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "公司年終發了四個月，大家的年終獎金都多少",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.016317151486873627,
+        "system": "Normal",
+        "system_score": 0.004355748272335511
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "有人玩過這款免費的手機遊戲嗎？劇情很好哭",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.010552400723099709,
+        "system": "Unknown",
+        "system_score": 0.25041985025437163
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "限時優惠：本店週年慶全館八折，歡迎蒞臨門市",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.009969054721295834,
+        "system": "Normal",
+        "system_score": 0.0266991411872289
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "今天股市大漲，手上的台積電終於解套了",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.40658295154571533,
+        "system": "Fraud",
+        "system_score": 0.9881639612089819
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "比特幣又創新高，不過我只是看戲沒有買",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.01130638550966978,
+        "system": "Normal",
+        "system_score": 0.012780977828251404
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "請問大家兼職家教一小時都收多少？",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.005063640885055065,
+        "system": "Normal",
+        "system_score": 0.003171556202131729
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "我媽說要去郵局辦帳戶，需要帶什麼證件",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.039041243493556976,
+        "system": "Unknown",
+        "system_score": 0.32006409094609717
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "心理測驗：你是哪一種個性的人？點進來看看",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.009993028827011585,
+        "system": "Normal",
+        "system_score": 0.03243874528893206
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "銀行打來說我信用卡額度調升，這正常嗎？",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.14571407437324524,
+        "system": "Normal",
+        "system_score": 0.04036285578266095
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "室友中了統一發票二百萬，請大家喝飲料",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.07161354273557663,
+        "system": "Unknown",
+        "system_score": 0.81866631479585
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "求推薦理財書籍，想學習資產配置",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.005725988186895847,
+        "system": "Normal",
+        "system_score": 0.026423569308251096
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "朋友介紹我去面試外商，薪水比現在高三成",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.021293729543685913,
+        "system": "Unknown",
+        "system_score": 0.6248283447349005
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "網購衣服到貨很快，品質也不錯推薦給大家",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.009649069048464298,
+        "system": "Unknown",
+        "system_score": 0.4036267674537251
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "期末考週要到了，圖書館座位好難搶",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.007419785019010305,
+        "system": "Normal",
+        "system_score": 0.024428883670245292
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "老師今天上課提到複利的概念，覺得很有收穫",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.006991373375058174,
+        "system": "Normal",
+        "system_score": 0.02071390015890766
+      },
+      {
+        "type": "keyword_trap",
+        "expect": "Normal",
+        "text": "分享一下我這個月記帳的結果，外食佔最多",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.006113816052675247,
+        "system": "Normal",
+        "system_score": 0.0036581683398699658
+      },
+      {
+        "type": "anti_fraud_awareness",
+        "expect": "Normal",
+        "text": "警方呼籲：假投資詐騙常以保證獲利、老師帶單為誘餌，請勿加入不明 LINE 群組",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.012659477069973946,
+        "system": "Normal",
+        "system_score": 0.002897575840420971
+      },
+      {
+        "type": "anti_fraud_awareness",
+        "expect": "Normal",
+        "text": "165 提醒您，任何要求您操作 ATM 解除分期付款的電話都是詐騙",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.3101385235786438,
+        "system": "Unknown",
+        "system_score": 0.06018846465712871
+      },
+      {
+        "type": "anti_fraud_awareness",
+        "expect": "Normal",
+        "text": "新聞報導：詐騙集團冒充檢察官要求被害人監管帳戶，已有多人受害",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.7340179085731506,
+        "system": "Unknown",
+        "system_score": 0.06809245916766192
+      },
+      {
+        "type": "anti_fraud_awareness",
+        "expect": "Normal",
+        "text": "反詐騙宣導：不要點擊簡訊中的短網址，也不要提供簡訊驗證碼",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.009548240341246128,
+        "system": "Normal",
+        "system_score": 0.0009895122246718106
+      },
+      {
+        "type": "anti_fraud_awareness",
+        "expect": "Normal",
+        "text": "我阿嬤差點被假冒孫子的電話騙，幸好銀行行員攔下來",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.5532448887825012,
+        "system": "Unknown",
+        "system_score": 0.7713221278723035
+      },
+      {
+        "type": "anti_fraud_awareness",
+        "expect": "Normal",
+        "text": "數發部提醒，網路上保證月入十萬的兼職廣告多半是詐騙",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.0524861179292202,
+        "system": "Normal",
+        "system_score": 0.00238317963079112
+      },
+      {
+        "type": "anti_fraud_awareness",
+        "expect": "Normal",
+        "text": "如果有人要你購買遊戲點數代付，請直接撥打 165 查證",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.11747090518474579,
+        "system": "Fraud",
+        "system_score": 0.9593754050486074
+      },
+      {
+        "type": "anti_fraud_awareness",
+        "expect": "Normal",
+        "text": "金管會提醒民眾，未經核准的投顧不得招攬投資",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.008597004227340221,
+        "system": "Normal",
+        "system_score": 0.033858057685968335
+      },
+      {
+        "type": "scam_positive",
+        "expect": "Fraud",
+        "text": "老師帶你投資飆股，保證獲利，現在加入群組並依照指示轉帳",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.9724679589271545,
+        "system": "Fraud",
+        "system_score": 0.9966546555129759
+      },
+      {
+        "type": "scam_positive",
+        "expect": "Fraud",
+        "text": "限時免費領取熱搜名單，加入官方LINE：@abc12345 立即領取",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.1287965178489685,
+        "system": "Fraud",
+        "system_score": 0.9767894378647743
+      },
+      {
+        "type": "scam_positive",
+        "expect": "Fraud",
+        "text": "在家打字員，日領三千，無經驗可，私訊加賴 lineid: job8888",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.12742245197296143,
+        "system": "Fraud",
+        "system_score": 0.9889471933388858
+      },
+      {
+        "type": "scam_positive",
+        "expect": "Fraud",
+        "text": "恭喜您中獎 iPhone，請點擊連結 https://bit.ly/xxxx 填寫資料領取",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.6733696460723877,
+        "system": "Fraud",
+        "system_score": 0.9617169020920627
+      },
+      {
+        "type": "scam_positive",
+        "expect": "Fraud",
+        "text": "USDT 穩定套利，月入十萬零風險，請先入金保證金",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.9799330234527588,
+        "system": "Fraud",
+        "system_score": 0.9855876309065404
+      },
+      {
+        "type": "scam_positive",
+        "expect": "Fraud",
+        "text": "親愛的，我在海外工作，需要你先幫我匯款付關稅，之後馬上還你",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.4518755078315735,
+        "system": "Fraud",
+        "system_score": 0.9717172872877324
+      },
+      {
+        "type": "scam_positive",
+        "expect": "Fraud",
+        "text": "您的帳戶異常已被凍結，請立即登入 http://secure-verify-bank.top 驗證身分",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.9843508005142212,
+        "system": "Fraud",
+        "system_score": 0.9773757715813545
+      },
+      {
+        "type": "scam_positive",
+        "expect": "Fraud",
+        "text": "內線消息：主力抄底，跟單漲停保證賺，名額有限只剩最後5名",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.9684051275253296,
+        "system": "Fraud",
+        "system_score": 0.992393050683799
+      },
+      {
+        "type": "invariance_ui_padding",
+        "expect": "Fraud",
+        "text": "登入\n註冊\n首頁\n探索\n老師帶你投資飆股，保證獲利，現在加入群組並依照指示轉帳\n分享\n查看更多\n隱私權政策",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.9757188558578491,
+        "system": "Fraud",
+        "system_score": 0.9966546555129759
+      },
+      {
+        "type": "invariance_ui_padding",
+        "expect": "Fraud",
+        "text": "登入\n註冊\n首頁\n探索\n限時免費領取熱搜名單，加入官方LINE：@abc12345 立即領取\n分享\n查看更多\n隱私權政策",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.5573461055755615,
+        "system": "Fraud",
+        "system_score": 0.9767894378647743
+      },
+      {
+        "type": "invariance_ui_padding",
+        "expect": "Fraud",
+        "text": "登入\n註冊\n首頁\n探索\nUSDT 穩定套利，月入十萬零風險，請先入金保證金\n分享\n查看更多\n隱私權政策",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.9817299842834473,
+        "system": "Fraud",
+        "system_score": 0.9855876309065404
+      },
+      {
+        "type": "invariance_ui_padding",
+        "expect": "Normal",
+        "text": "登入\n註冊\n首頁\n探索\n年薪約100萬的工程師，每天實際工作幾小時？\n分享\n查看更多\n隱私權政策",
+        "macbert_raw": "Fraud",
+        "macbert_raw_score": 0.566409707069397,
+        "system": "Unknown",
+        "system_score": 0.10423909788284853
+      },
+      {
+        "type": "invariance_ui_padding",
+        "expect": "Normal",
+        "text": "登入\n註冊\n首頁\n探索\n學測模擬測驗成績出來了，大家覺得國文難嗎\n分享\n查看更多\n隱私權政策",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.045908842235803604,
+        "system": "Normal",
+        "system_score": 0.0009532792864881516
+      },
+      {
+        "type": "invariance_ui_padding",
+        "expect": "Normal",
+        "text": "登入\n註冊\n首頁\n探索\n新手想開始定期定額投資 ETF，該注意什麼？\n分享\n查看更多\n隱私權政策",
+        "macbert_raw": "Normal",
+        "macbert_raw_score": 0.04374205321073532,
+        "system": "Normal",
+        "system_score": 0.008710681293366296
+      }
+    ],
+    "synthetic": true,
+    "system": "macbert_social + fusion_model_social"
+  }
+}

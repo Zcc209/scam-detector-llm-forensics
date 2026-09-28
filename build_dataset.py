@@ -79,18 +79,10 @@ def split_groups(cases, seed, fractions=(0.6, 0.2, 0.2)):
         case['split'] = assignment[case['group_id']]
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--fraudbuster', type=Path, default=Path('data/fraudbuster/cases.jsonl'))
-    parser.add_argument('--hard-negatives', type=Path, default=Path('data/hard_negatives/ptt.jsonl'))
-    parser.add_argument('--output', type=Path, default=Path('data/dataset/manifest.jsonl'))
-    parser.add_argument('--max-fraud', type=int, default=900,
-                        help='cap Fraud cases per platform (newest first); Threads dominates recent reports')
-    parser.add_argument('--max-per-group', type=int, default=10)
-    parser.add_argument('--seed', type=int, default=20261115)
-    args = parser.parse_args()
+def load_official(path):
+    """Adjudicated cases, newest first, without placeholders or exact reposts."""
     unique = {}
-    for line in args.fraudbuster.read_text(encoding='utf-8').splitlines():
+    for line in Path(path).read_text(encoding='utf-8').splitlines():
         try:
             case = json.loads(line)
         except ValueError:
@@ -113,6 +105,26 @@ def main():
                       'label_source': case['label_source'], 'source_url': case['source_url'],
                       'category': case.get('category'), 'platforms': case.get('platforms'),
                       'reported_at': case.get('reported_at')})
+    return cases
+
+
+def old_recipe_fraud_ids(path, max_fraud=900):
+    """Fraud cases the previous recipe kept: the newest `max_fraud` overall, which were ~95% Threads."""
+    fraud = [c for c in load_official(path) if c['label'] == 'Fraud']
+    return {c['case_id'] for c in fraud[:max_fraud]}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--fraudbuster', type=Path, default=Path('data/fraudbuster/cases.jsonl'))
+    parser.add_argument('--hard-negatives', type=Path, default=Path('data/hard_negatives/ptt.jsonl'))
+    parser.add_argument('--output', type=Path, default=Path('data/dataset/manifest.jsonl'))
+    parser.add_argument('--max-fraud', type=int, default=900,
+                        help='cap Fraud cases per platform (newest first); Threads dominates recent reports')
+    parser.add_argument('--max-per-group', type=int, default=10)
+    parser.add_argument('--seed', type=int, default=20261115)
+    args = parser.parse_args()
+    cases = load_official(args.fraudbuster)
     # A global newest-first cap kept ~95% Threads and dropped most Facebook / web / LINE fraud; cap each platform instead.
     per_platform, fraud = Counter(), []
     for case in (c for c in cases if c['label'] == 'Fraud'):

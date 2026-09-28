@@ -245,6 +245,63 @@ def pct(value):
     return '—' if value is None else f'{value * 100:.1f}%'
 
 
+PREVIOUS_SPLIT_NOTE = ('舊資料切分（只取最新 900 筆詐騙，測試集 178 筆：69 詐騙／109 非詐騙，幾乎全為 Threads）曾量到完整系統 '
+                       'F1 79.1%、AUC 0.92。該切分高估了跨平台表現，已停用；其餘數字全部來自目前的切分。')
+README_START = '<!-- results:start（由 run_experiments.py 自動產生，請勿手動修改） -->'
+README_END = '<!-- results:end -->'
+
+
+def readme_section(results):
+    """The README's results block, generated from the same results.json as docs/experiment_results.md."""
+    by = {m['name']: m for m in results['methods']}
+    final, base = by['lr_full_ft'], by['macbert_argmax']
+    t, c = final['official_test'], final['conformal_test']
+    ci = t.get('f1_95ci') or [None, None]
+    n_fraud, n_normal = t['tp'] + t['fn'], t['tn'] + t['fp']
+    lines = ['## 實測成效', '',
+             f"測試資料：數位發展部「網路詐騙通報查詢網」中主管機關已判定的案例，**{t['n']} 筆（{n_fraud} 詐騙、{n_normal} 非詐騙）**，"
+             '和訓練資料依帳號、聯絡方式、相似文字分組，完全不重疊。以下所有數字都由 `run_experiments.py` 從同一份 '
+             '[`docs/experiment_results.json`](docs/experiment_results.json) 產生，與 [實驗結果](docs/experiment_results.md) 和網站上的「系統實測成效」一致。', '',
+             '**① 全體分類效能**（每一筆都強制判為詐騙或正常）', '',
+             '| Precision | Recall | F1（95% 信賴區間） | FPR | AUC |', '|---:|---:|---:|---:|---:|',
+             f"| {pct(t['precision'])} | {pct(t['recall'])} | {pct(t['f1'])}（{pct(ci[0])}～{pct(ci[1])}） | {pct(t['fpr'])} | {final['auc']:.2f} |", '',
+             '**② 加上「需要人工查證」之後**（和①分母不同，不能直接比較）', '',
+             '| 交給人工的比例 | 已判斷樣本的準確率 | 詐騙覆蓋率 | 正常覆蓋率 |', '|---:|---:|---:|---:|',
+             f"| {pct(c['unknown_rate'])} | {pct(c['accuracy_when_decided'])} | {pct(c['coverage_fraud'])} | {pct(c['coverage_normal'])} |", '',
+             '**③ 各平台**（全體分類，不拒答）', '', '| 平台 | 詐騙／非詐騙 | F1 | FPR |', '|---|---:|---:|---:|']
+    for name, b in (final.get('by_platform') or {}).items():
+        if name != 'other':
+            lines.append(f"| {name} | {b['tp'] + b['fn']}／{b['tn'] + b['fp']} | {pct(b['f1']) if b['tp'] + b['fn'] else '—'} | {pct(b['fpr'])} |")
+    if 'macbert_ft_old_recipe_argmax' in by:
+        old, new = by['macbert_ft_old_recipe_argmax'], by['macbert_ft_argmax']
+        fb = lambda m: pct(((m.get('by_platform') or {}).get('Facebook') or {}).get('f1'))
+        lines += ['', '**跨平台泛化**：官方通報以 Threads 為主。原本的資料集只取最新 900 筆詐騙，幾乎全是 Threads，'
+                  '因此改成各平台分別取樣，並依平台分層切分訓練／測試。在**同一份測試集**上比較微調 MacBERT（`python compare_recipes.py`）：', '',
+                  '| 訓練方式 | F1 | AUC | Facebook F1 |', '|---|---:|---:|---:|',
+                  f"| 舊作法（Threads 為主） | {pct(old['official_test']['f1'])} | {old['auc']:.2f} | {fb(old)} |",
+                  f"| 新作法（各平台平衡） | **{pct(new['official_test']['f1'])}** | **{new['auc']:.2f}** | **{fb(new)}** |"]
+    if 'lr_+llm' in by and 'lr_full_llm_off' in by:
+        gain = by['lr_+llm']['official_test']['f1'] - by['lr_+account']['official_test']['f1']
+        off = by['lr_full']['official_test']['f1'] - by['lr_full_llm_off']['official_test']['f1']
+        lines += ['', f"**LLM 的貢獻**：消融實驗中，加入 LLM 讓 F1 變化 {gain * 100:+.1f} 個百分點；完整模型關掉 LLM，F1 變化 {-off * 100:+.1f} 個百分點。"
+                  'LLM 不是準確率的主要來源，定位是證據抽取與可解釋性。']
+    lines += ['', f"**注意**：{PREVIOUS_SPLIT_NOTE}", '',
+              f"其他：原始 MacBERT 在同一份測試集上 Recall {pct(base['official_test']['recall'])}、AUC {base['auc']:.2f}；"
+              f"訓練時沒看過的 PTT 看板一般文章，誤判為詐騙的比例 {pct(final['hard_negative_fpr'])}。"
+              '官方資料中 LINE、TikTok、IG 的詐騙案例內容多已被移除（只剩預設圖示），無法用於評估。代表性案例見 [demo 案例](docs/demo_cases.md)。']
+    return '\n'.join(lines)
+
+
+def update_readme(results, path=ROOT / 'README.md'):
+    text = path.read_text(encoding='utf-8')
+    if README_START not in text or README_END not in text:
+        print('README markers missing; results section not updated', flush=True)
+        return
+    head, rest = text.split(README_START, 1)
+    tail = rest.split(README_END, 1)[1]
+    path.write_text(head + README_START + '\n' + readme_section(results) + '\n' + README_END + tail, encoding='utf-8')
+
+
 def report_markdown(results):
     data = results['data']
     lines = ['# 實驗結果（自動產生）', '', f"產生時間：{results['generated_at']}　模型：MacBERT `{results['macbert_sha256'][:12]}`",
@@ -282,6 +339,15 @@ def report_markdown(results):
             if b:
                 lines.append(f"|{m['label_zh']}|{'其他平台合計' if platform_name == 'other' else platform_name}|{b['tp'] + b['fn']}／{b['tn'] + b['fp']}|"
                              f"{pct(b['precision'])}|{pct(b['recall'])}|{pct(b['f1']) if b['tp'] + b['fn'] else '—'}|{pct(b['fpr'])}|")
+    by = {m['name']: m for m in results['methods']}
+    if 'macbert_ft_old_recipe_argmax' in by:
+        lines += ['', '## 資料取樣方式的對照實驗（同一份測試集，python compare_recipes.py）', '',
+                  '|MacBERT 微調資料|F1|AUC|Threads F1|Facebook F1|一般網頁 F1|', '|---|---:|---:|---:|---:|---:|']
+        for key in ('macbert_ft_old_recipe_argmax', 'macbert_ft_argmax'):
+            m, b = by[key], by[key].get('by_platform') or {}
+            lines.append(f"|{m['label_zh']}|{pct(m['official_test']['f1'])}|{m['auc']:.3f}|{pct((b.get('Threads') or {}).get('f1'))}|"
+                         f"{pct((b.get('Facebook') or {}).get('f1'))}|{pct((b.get('一般網頁') or {}).get('f1'))}|")
+    lines += ['', '## 舊資料切分（已停用，不能與上表比較）', '', PREVIOUS_SPLIT_NOTE]
     lines += ['', '## D. 行為測試（人工合成句，只測穩健性，不是準確率）', '',
               '|測試類型:預期|句數|MacBERT 原始通過率|本系統通過率|本系統判錯（非 Unknown）|', '|---|---:|---:|---:|---:|']
     for kind, s in (results.get('behavioral') or {}).get('summary', {}).items():
@@ -377,6 +443,20 @@ def main():
                                 lambda c: c['evidence']['text_model']['fraud_confidence'])
         extra['label_zh'] = 'MacBERT 社群領域微調（argmax）'
         methods.append(extra)
+        # Controlled recipe comparison (compare_recipes.py): same test cases, MacBERT trained on the old Threads-heavy set.
+        old_scores = load(args.scores / 'base_ft_old_recipe.jsonl')
+        if old_scores:
+            old_test = []
+            for case in ft_test:
+                row = old_scores.get(case['case_id']) or {}
+                model_ = row.get('text_model') or row.get('ocr_model')
+                if model_:
+                    old_test.append({**case, 'evidence': {**case['evidence'], 'text_model': model_}})
+            if len(old_test) == len(ft_test):
+                extra = evaluate_method('macbert_ft_old_recipe_argmax', old_test, [], macbert_argmax,
+                                        lambda c: c['evidence']['text_model']['fraud_confidence'])
+                extra['label_zh'] = 'MacBERT 社群微調・舊作法（只取最新 900 筆詐騙，Threads 為主）'
+                methods.append(extra)
         ft_model = fit_variant(ABLATIONS[4][1], ft_train, ft_calib, args.alpha)
         prob = lambda c: fusion_model.score(ft_model, fusion_model.vectorize(c['evidence']))
         extra = evaluate_method('lr_full_ft', ft_test, ft_hard, lambda c: 'Fraud' if prob(c) > 0.5 else 'Normal', prob)
@@ -465,7 +545,10 @@ def main():
     out = ROOT / 'artifacts' / 'experiments'
     out.mkdir(parents=True, exist_ok=True)
     (out / 'results.json').write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding='utf-8')
+    # Tracked copy: the single source of truth for README, docs/experiment_results.md and the website metrics.
+    (ROOT / 'docs' / 'experiment_results.json').write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding='utf-8')
     (ROOT / 'docs' / 'experiment_results.md').write_text(report_markdown(results), encoding='utf-8')
+    update_readme(results)
     print(report_markdown(results))
 
 
