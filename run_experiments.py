@@ -247,6 +247,14 @@ def pct(value):
 
 PREVIOUS_SPLIT_NOTE = ('舊資料切分（只取最新 900 筆詐騙，測試集 178 筆：69 詐騙／109 非詐騙，幾乎全為 Threads）曾量到完整系統 '
                        'F1 79.1%、AUC 0.92。該切分高估了跨平台表現，已停用；其餘數字全部來自目前的切分。')
+FEATURE_ZH = {'text_logit': 'MacBERT 文字分數', 'text_missing': '沒有文字', 'ocr_logit': 'MacBERT 圖片內文字分數', 'ocr_missing': '沒有圖片內文字',
+              'off_platform_contact': '引導到站外聯絡', 'short_link': '短網址', 'guaranteed_return': '保證獲利', 'investment_lure': '投資招攬用語',
+              'crypto_or_payment': '匯款／虛擬貨幣', 'urgency': '催促、限時', 'free_giveaway': '免費贈送／中獎', 'job_lure': '輕鬆高薪兼職',
+              'impersonation_claim': '提到官方機構或客服', 'verified_badge': '平台驗證標章（只能推向正常）', 'throwaway_profile': '粉絲很少的新帳號',
+              'large_audience': '大量粉絲（只能推向正常）', 'random_digit_handle': '隨機數字帳號', 'simplified_chinese': '大量簡體字',
+              'llm_tactic_count': 'LLM 找到的手法數', 'llm_solicitation': 'LLM：招攬讀者', 'llm_addresses_reader': 'LLM：直接要求讀者行動',
+              'llm_risk': 'LLM 風險等級', 'llm_benign_act': 'LLM：討論／新聞／分享（只能推向正常）', 'llm_missing': '沒有 LLM 結果',
+              'image_known_scam_match': '與已知詐騙圖片相符', 'image_brand_mismatch': '品牌與網址不符', 'image_editor_tag': '圖片編修紀錄'}
 README_START = '<!-- results:start（由 run_experiments.py 自動產生，請勿手動修改） -->'
 README_END = '<!-- results:end -->'
 
@@ -272,23 +280,23 @@ def readme_section(results):
     for name, b in (final.get('by_platform') or {}).items():
         if name != 'other':
             lines.append(f"| {name} | {b['tp'] + b['fn']}／{b['tn'] + b['fp']} | {pct(b['f1']) if b['tp'] + b['fn'] else '—'} | {pct(b['fpr'])} |")
-    if 'macbert_ft_old_recipe_argmax' in by:
-        old, new = by['macbert_ft_old_recipe_argmax'], by['macbert_ft_argmax']
-        fb = lambda m: pct(((m.get('by_platform') or {}).get('Facebook') or {}).get('f1'))
-        lines += ['', '**跨平台泛化**：官方通報以 Threads 為主。原本的資料集只取最新 900 筆詐騙，幾乎全是 Threads，'
-                  '因此改成各平台分別取樣，並依平台分層切分訓練／測試。在**同一份測試集**上比較微調 MacBERT（`python compare_recipes.py`）：', '',
-                  '| 訓練方式 | F1 | AUC | Facebook F1 |', '|---|---:|---:|---:|',
-                  f"| 舊作法（Threads 為主） | {pct(old['official_test']['f1'])} | {old['auc']:.2f} | {fb(old)} |",
-                  f"| 新作法（各平台平衡） | **{pct(new['official_test']['f1'])}** | **{new['auc']:.2f}** | **{fb(new)}** |"]
+    if 'macbert_ft_argmax' in by:
+        lines += ['', '**和原始 MacBERT 比較**（同一份測試集，每一筆都強制判定）：原始模型 `anti_fraud_E3_macbert` 是用詐騙對話訓練的，'
+                  '直接拿來判斷社群貼文幾乎抓不到詐騙；`macbert_social` 是在它的基礎上，用官方判定的社群貼文與 PTT 一般文章再微調'
+                  '（做法見[系統運作說明](docs/system_walkthrough.md#macbert-的三個版本)）；完整系統再加上帳號特徵、LLM、影像鑑識一起融合。', '',
+                  '| 模型 | Precision | Recall | F1 | FPR | AUC |', '|---|---:|---:|---:|---:|---:|']
+        for key, label in (('macbert_argmax', '原始 MacBERT（anti_fraud_E3_macbert）'), ('macbert_ft_argmax', '社群微調 MacBERT（macbert_social）'),
+                           ('lr_full_ft', '完整系統（macbert_social＋證據融合）')):
+            m, o = by[key], by[key]['official_test']
+            lines.append(f"| {label} | {pct(o['precision'])} | {pct(o['recall'])} | {pct(o['f1'])} | {pct(o['fpr'])} | {m['auc']:.2f} |")
     if 'lr_+llm' in by and 'lr_full_llm_off' in by:
         gain = by['lr_+llm']['official_test']['f1'] - by['lr_+account']['official_test']['f1']
         off = by['lr_full']['official_test']['f1'] - by['lr_full_llm_off']['official_test']['f1']
         lines += ['', f"**LLM 的貢獻**：消融實驗中，加入 LLM 讓 F1 變化 {gain * 100:+.1f} 個百分點；完整模型關掉 LLM，F1 變化 {-off * 100:+.1f} 個百分點。"
                   'LLM 不是準確率的主要來源，定位是證據抽取與可解釋性。']
-    lines += ['', f"**注意**：{PREVIOUS_SPLIT_NOTE}", '',
-              f"其他：原始 MacBERT 在同一份測試集上 Recall {pct(base['official_test']['recall'])}、AUC {base['auc']:.2f}；"
-              f"訓練時沒看過的 PTT 看板一般文章，誤判為詐騙的比例 {pct(final['hard_negative_fpr'])}。"
-              '官方資料中 LINE、TikTok、IG 的詐騙案例內容多已被移除（只剩預設圖示），無法用於評估。代表性案例見 [demo 案例](docs/demo_cases.md)。']
+    lines += ['', f"其他：訓練時沒看過的 PTT 看板一般文章，誤判為詐騙的比例 {pct(final['hard_negative_fpr'])}。"
+              '官方資料中 LINE、TikTok、IG 的詐騙案例內容多已被移除（只剩預設圖示），無法用於評估。'
+              '融合模型的權重與門檻見[實驗結果](docs/experiment_results.md#融合模型權重與門檻)，代表性案例見 [demo 案例](docs/demo_cases.md)。']
     return '\n'.join(lines)
 
 
@@ -348,6 +356,19 @@ def report_markdown(results):
             lines.append(f"|{m['label_zh']}|{pct(m['official_test']['f1'])}|{m['auc']:.3f}|{pct((b.get('Threads') or {}).get('f1'))}|"
                          f"{pct((b.get('Facebook') or {}).get('f1'))}|{pct((b.get('一般網頁') or {}).get('f1'))}|")
     lines += ['', '## 舊資料切分（已停用，不能與上表比較）', '', PREVIOUS_SPLIT_NOTE]
+    final = by.get('lr_full_ft') or {}
+    if final.get('weights'):
+        q = final['conformal_model']
+        lines += ['', '## 融合模型權重與門檻', '',
+                  '網站實際使用的融合模型（`models/fusion_model_social.json`）。融合分數 = 1 ÷ (1 + e^(−z))，'
+                  f"z = 截距 {final['bias']:+.3f} ＋ Σ 權重 × 特徵值。權重為 0 代表在訓練資料中沒有幫助（被符號限制或 L2 壓到 0）。", '',
+                  '|特徵|說明|權重|', '|---|---|---:|']
+        for name, weight in sorted(final['weights'].items(), key=lambda item: -abs(item[1])):
+            lines.append(f"|{name}|{FEATURE_ZH.get(name, '')}|{weight:+.3f}|")
+        lines += ['', f"Conformal 門檻（α = {q['alpha']}，校準資料 {q['n_fraud']} 筆詐騙、{q['n_normal']} 筆非詐騙）：", '',
+                  f"- 融合分數 ≥ {1 - q['q_fraud']:.1%}：保留「詐騙」",
+                  f"- 融合分數 ≤ {q['q_normal']:.1%}：保留「正常」",
+                  f"- 只剩「詐騙」→ 疑似詐騙；只剩「正常」→ 未發現明顯詐騙跡象；兩者都保留 → 需要人工查證"]
     lines += ['', '## D. 行為測試（人工合成句，只測穩健性，不是準確率）', '',
               '|測試類型:預期|句數|MacBERT 原始通過率|本系統通過率|本系統判錯（非 Unknown）|', '|---|---:|---:|---:|---:|']
     for kind, s in (results.get('behavioral') or {}).get('summary', {}).items():
@@ -461,6 +482,9 @@ def main():
         prob = lambda c: fusion_model.score(ft_model, fusion_model.vectorize(c['evidence']))
         extra = evaluate_method('lr_full_ft', ft_test, ft_hard, lambda c: 'Fraud' if prob(c) > 0.5 else 'Normal', prob)
         extra['label_zh'] = '完整 + 微調 MacBERT'
+        extra['weights'] = dict(zip(ft_model['feature_names'], ft_model['weights']))
+        extra['bias'] = ft_model['bias']
+        extra['conformal_model'] = ft_model['conformal']
         labels = [int(c['label'] == 'Fraud') for c in ft_test]
         probabilities = [prob(c) for c in ft_test]
         extra['conformal_test'] = conformal.evaluate(probabilities, labels, ft_model['conformal'])

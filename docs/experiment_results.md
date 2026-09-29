@@ -1,6 +1,6 @@
 # 實驗結果（自動產生）
 
-產生時間：2026-09-28T02:37:25.917106+00:00　模型：MacBERT `49f90dd486e7`
+產生時間：2026-09-29T13:39:26.793303+00:00　模型：MacBERT `49f90dd486e7`
 
 ## 資料
 
@@ -74,6 +74,46 @@ LR 列為「不拒答」的 argmax 結果；下表為加上 conformal 拒答後�
 ## 舊資料切分（已停用，不能與上表比較）
 
 舊資料切分（只取最新 900 筆詐騙，測試集 178 筆：69 詐騙／109 非詐騙，幾乎全為 Threads）曾量到完整系統 F1 79.1%、AUC 0.92。該切分高估了跨平台表現，已停用；其餘數字全部來自目前的切分。
+
+## 融合模型權重與門檻
+
+網站實際使用的融合模型（`models/fusion_model_social.json`）。融合分數 = 1 ÷ (1 + e^(−z))，z = 截距 +1.139 ＋ Σ 權重 × 特徵值。權重為 0 代表在訓練資料中沒有幫助（被符號限制或 L2 壓到 0）。
+
+|特徵|說明|權重|
+|---|---|---:|
+|text_logit|MacBERT 文字分數|+6.266|
+|image_known_scam_match|與已知詐騙圖片相符|+5.317|
+|impersonation_claim|提到官方機構或客服|+2.753|
+|ocr_missing|沒有圖片內文字|-1.559|
+|throwaway_profile|粉絲很少的新帳號|+1.343|
+|urgency|催促、限時|+0.516|
+|llm_risk|LLM 風險等級|+0.314|
+|llm_tactic_count|LLM 找到的手法數|+0.105|
+|random_digit_handle|隨機數字帳號|+0.062|
+|large_audience|大量粉絲（只能推向正常）|-0.013|
+|llm_missing|沒有 LLM 結果|-0.009|
+|guaranteed_return|保證獲利|+0.005|
+|text_missing|沒有文字|+0.000|
+|ocr_logit|MacBERT 圖片內文字分數|+0.000|
+|off_platform_contact|引導到站外聯絡|+0.000|
+|short_link|短網址|+0.000|
+|investment_lure|投資招攬用語|+0.000|
+|crypto_or_payment|匯款／虛擬貨幣|+0.000|
+|free_giveaway|免費贈送／中獎|+0.000|
+|job_lure|輕鬆高薪兼職|+0.000|
+|verified_badge|平台驗證標章（只能推向正常）|+0.000|
+|simplified_chinese|大量簡體字|+0.000|
+|llm_solicitation|LLM：招攬讀者|+0.000|
+|llm_addresses_reader|LLM：直接要求讀者行動|+0.000|
+|llm_benign_act|LLM：討論／新聞／分享（只能推向正常）|+0.000|
+|image_brand_mismatch|品牌與網址不符|+0.000|
+|image_editor_tag|圖片編修紀錄|+0.000|
+
+Conformal 門檻（α = 0.1，校準資料 98 筆詐騙、119 筆非詐騙）：
+
+- 融合分數 ≥ 5.1%：保留「詐騙」
+- 融合分數 ≤ 83.0%：保留「正常」
+- 只剩「詐騙」→ 疑似詐騙；只剩「正常」→ 未發現明顯詐騙跡象；兩者都保留 → 需要人工查證
 
 ## D. 行為測試（人工合成句，只測穩健性，不是準確率）
 

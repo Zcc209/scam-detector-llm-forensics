@@ -60,6 +60,9 @@ class FilterAndSignalTests(unittest.TestCase):
         names = {s['signal'] for s in result['signals']}
         self.assertTrue({'off_platform_contact', 'throwaway_profile', 'random_digit_handle'} <= names)
         self.assertEqual(profile_counts('147.3萬\n位粉絲')['followers'], 1473000)
+        # "加我賴" with the OCR dropping "ID:" (data/demo/case1_invest_group.jpg); "加了" is not a contact request.
+        self.assertIn('off_platform_contact', {s['signal'] for s in extract('進群組可加我賴|: 2y9784')['signals']})
+        self.assertNotIn('off_platform_contact', {s['signal'] for s in extract('我加了一個新的課程')['signals']})
         self.assertIn('large_audience', {s['signal'] for s in extract('147.3萬 位粉絲')['signals']})
 
 

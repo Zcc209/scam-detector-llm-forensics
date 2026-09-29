@@ -11,7 +11,7 @@ _S2T = OpenCC('s2t')
 NUMBER = r'(\d[\d,.]*)\s*([kKmM萬千]?)'
 
 PATTERNS = {
-    'off_platform_contact': (r'(line\s*(?:id|🆔)?\s*[:：]?\s*@?[a-z0-9_.\-]{4,}|🆔\s*[:：]?\s*@?[a-z0-9_.\-]{4,}|加\s*(?:賴|line|LINE)|'
+    'off_platform_contact': (r'(line\s*(?:id|🆔)?\s*[:：]?\s*@?[a-z0-9_.\-]{4,}|🆔\s*[:：]?\s*@?[a-z0-9_.\-]{4,}|加\s*(?:我|一下|我的)?\s*(?:賴|line|LINE)|'
                              r'line\.me/\S+|lin\.ee/\S+|t\.me/\S+|telegram|wa\.me/\S+|whatsapp|微信|vx\s*[:：]|wechat)', 2.0),
     'short_link': (r'(tinyurl\.com|bit\.ly|reurl\.cc|pse\.is|lihi\d?\.\w+|0rz\.tw|is\.gd|cutt\.ly|shorturl\.at|t\.cn|goo\.su|ppt\.cc)', 1.5),
     'guaranteed_return': (r'(保證(?:獲利|賺|回本|收益)|穩賺|零風險|保本|包賺|月入\s*\d|日賺|日入|翻倍|報酬率\s*\d+\s*%|賺到\s*\d+\s*倍)', 2.0),
