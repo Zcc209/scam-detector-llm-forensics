@@ -102,3 +102,13 @@ class ServerTests(unittest.TestCase):
                 run.return_value.returncode = 2
                 web_server.analyze('test', ['--url', 'https://example.com'], Path('model'))
             self.assertEqual(web_server.JOBS.pop('test')['state'], 'done')
+
+
+class EnvironmentCheckTests(unittest.TestCase):
+    def test_refuses_to_start_without_pipeline_packages(self):
+        # Started with a system Python instead of the project venv, every analysis failed with "No module named numpy".
+        self.assertEqual(web_server.missing_packages(), [])
+        with patch('importlib.util.find_spec', return_value=None), patch.object(web_server.sys, 'argv', ['web_server.py']):
+            with self.assertRaises(SystemExit) as stop:
+                web_server.main()
+        self.assertIn('numpy', str(stop.exception.code))

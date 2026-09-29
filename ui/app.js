@@ -17,7 +17,8 @@ const ERRORS = [[/whitespace|control characters|Invalid hostname|Invalid port|On
   [/Non-public network|credentials/i, '這個網址指向內部網路或含有帳號密碼，基於安全考量不會開啟。'],
   [/timed? ?out|逾時/i, '分析時間過長，已停止。請稍後再試一次。'], [/Queue full/i, '目前分析的人數較多，請稍後再試。'],
   [/Upload limit|10 MB/i, '圖片不得超過 10 MB。'], [/cannot identify image|Invalid base64|Incorrect padding/i, '無法讀取這張圖片，請改用 PNG 或 JPG 檔。'],
-  [/MacBERT model missing|Input image does not exist/i, '系統模型檔案不完整，請聯絡管理員。']];
+  [/MacBERT model missing|Input image does not exist/i, '系統模型檔案不完整，請依 README 下載 macbert_social.zip。'],
+  [/No module named|ModuleNotFoundError|沒有產生報告/i, '網站是用缺少套件的 Python 啟動的。請關掉網站，啟用虛擬環境（.venv\\Scripts\\Activate.ps1）後再執行 python web_server.py。']];
 // Messages the site itself wrote in Chinese pass through; English exceptions from the pipeline are translated.
 const friendlyError = message => (ERRORS.find(([pattern]) => pattern.test(message || '')) || [null, /[一-鿿]/.test(message || '') ? message : '分析時發生錯誤，請稍後再試。'])[1];
 const SEVERITY = {high: 0, medium: 1, low: 2};

@@ -179,7 +179,25 @@ class Handler(BaseHTTPRequestHandler):
             self.send(400, {'error': str(exc) if isinstance(exc, ValueError) else '請求格式錯誤'})
 
 
+REQUIRED = ('numpy', 'scipy', 'PIL', 'cv2', 'torch', 'transformers', 'easyocr', 'playwright', 'opencc')
+
+
+def missing_packages():
+    """Packages run_pipeline.py needs, checked in *this* interpreter (the one each analysis subprocess uses)."""
+    import importlib.util
+    return [name for name in REQUIRED if importlib.util.find_spec(name) is None]
+
+
 def main():
+    missing = missing_packages()
+    if missing:
+        # Started with a Python that is not the project's virtual environment: every analysis would fail on import.
+        sys.exit(f"無法啟動：目前使用的 Python（{sys.executable}）缺少套件 {', '.join(missing)}。\n"
+                 "請先啟用專案的虛擬環境再啟動，例如：\n"
+                 "  .\\.venv\\Scripts\\Activate.ps1\n"
+                 "  python web_server.py\n"
+                 "或直接用虛擬環境的 Python：.venv\\Scripts\\python.exe web_server.py\n"
+                 "還沒安裝套件的話，請依 README 的「在電腦安裝與執行」操作。")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--model-path', type=Path, default=ROOT / 'anti_fraud_E3_macbert')

@@ -173,6 +173,7 @@ python scenario_check.py
 
 | 狀況 | 解法 |
 |---|---|
+| 啟動時出現「無法啟動：目前使用的 Python…缺少套件」，或每次分析都顯示「分析已停止」 | 網站是用系統的 Python 啟動的，不是專案的虛擬環境。先執行 `.\.venv\Scripts\Activate.ps1`，再執行 `python web_server.py` |
 | `MacBERT model missing` | 沒有放模型，或資料夾放錯層。確認 `models/macbert_social/config.json` 存在 |
 | 網頁顯示「頁面需要登入才能查看」 | Instagram／Facebook 對未登入的瀏覽有限制。請改用截圖模式上傳 |
 | 「本次沒有取得 LLM 分析」 | Ollama 沒有啟動，或沒有執行 `ollama pull qwen2.5:7b` |
