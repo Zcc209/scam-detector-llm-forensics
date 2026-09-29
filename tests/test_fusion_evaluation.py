@@ -115,6 +115,37 @@ class FusionTests(unittest.TestCase):
             self.assertEqual(report["evidence"]["screenshot_ocr"]["id"], "content:screenshot_ocr")
 
 
+class ShortScreenshotTests(unittest.TestCase):
+    def test_short_screenshot_without_evidence_abstains(self):
+        # "今天天氣很好…" scored as fraud by the text model: 21 characters and no URL, tactic, account or image
+        # evidence must end as Unknown (too_little_text), keeping the model's Medium as the base conclusion.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "model").mkdir()
+            (root / "model" / "config.json").write_text("{}", encoding="utf-8")
+            image = root / "chat.png"
+            image.write_bytes(b"fixture")
+
+            class FakePipeline:
+                def __init__(self, model_path):
+                    pass
+
+                def process_image(self, path):
+                    return {**model_result("Fraud", 0.8), "ocr_texts": ["今天天氣很好", "我們下午去看電影吧", "晚餐想吃拉麵"]}
+
+            fused = {"status": "SUCCESS", "prediction": "Fraud", "prediction_set": ["Fraud"], "fraud_score": 0.9,
+                     "basis": "conformal_singleton", "score_type": "stacked_logistic_fitted_on_labeled_cases"}
+            argv = ["run_pipeline.py", "--image", str(image), "--model-path", str(root / "model"),
+                    "--output-dir", str(root / "output"), "--no-llm", "--no-follow"]
+            with patch.object(sys, "argv", argv), patch("run_pipeline.decide_content", return_value=fused), \
+                    patch.dict(sys.modules, {"integrated_app": types.SimpleNamespace(ScamDetectionPipeline=FakePipeline)}), \
+                    redirect_stdout(io.StringIO()):
+                main()
+            assessment = json.loads((root / "output" / "report.json").read_text(encoding="utf-8"))["assessment"]
+            self.assertEqual((assessment["model_risk_level"], assessment["risk_level"], assessment["basis"]),
+                             ("Medium", "Unknown", "too_little_text"))
+
+
 class EvaluationTests(unittest.TestCase):
     def test_165_candidates_are_domain_only(self):
         with tempfile.TemporaryDirectory() as tmp:

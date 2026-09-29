@@ -21,7 +21,7 @@ SCENARIOS = [
     ('img_myship_fake', ['--image', 'data/demo/myship_fake.png'], {'High'}),
     ('img_myship_real', ['--image', 'data/demo/myship_real.png'], {'Low', 'Unknown', 'Medium'}),
     ('img_listed_165', ['--image', 'data/demo/listed_165.png'], {'High'}),
-    ('img_benign_chat', ['--image', 'data/demo/benign_chat.png'], {'Low', 'Unknown'}),
+    ('img_line_chat', ['--image', 'data/demo/case5_line_chat.jpg'], {'Low', 'Unknown'}),
     ('img_blank', ['--image', 'data/demo/blank.png'], {'Unknown'}),
 ]
 UI_KEYS = ['assessment', 'report_summary', 'evidence', 'content_analysis', 'link_trace', 'image_forensics', 'account_signals']
