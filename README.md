@@ -74,7 +74,7 @@
 | 4 | 仿冒網域 | `data/demo/case4_fake_myship_chat.jpg`（假 7-11 賣貨便連結） | 高度疑似詐騙 | 模型先判疑似，連結追蹤的硬證據再升級 |
 | 5 | 需要人工查證 | `data/demo/case5_line_chat.jpg`（自我介紹前後矛盾的 LINE 聊天） | 需要人工查證 | 證據不足時不硬判 |
 
-更多說明：[系統運作說明](docs/system_walkthrough.md)（輸入一個網址後的每一步、網頁每個區塊的意思）。
+更多說明：[系統運作說明](docs/system_walkthrough.md)（輸入一個網址後的每一步、網頁每個區塊的意思）；[拒答門檻、分數校準與熱點圖](docs/calibration_and_explanations.md)（conformal 門檻怎麼算，附流程圖）。
 
 ---
 
