@@ -1,10 +1,11 @@
 """Benchmark: baselines vs learned evidence fusion, with conformal abstention and robustness tests.
 
-A  official benchmark  : MODA-adjudicated Fraud vs Normal cases, group-separated train/calibration/test.
-B  hard negatives      : presumed-normal PTT posts from boards never seen in training -> false-positive rate.
-D  behavioral tests    : CheckList-style synthetic probes (data/behavioral_tests.json) -> pass rate.
-Fits models/fusion_model.json (the configuration used by the live pipeline) and writes
-artifacts/experiments/results.json plus docs/experiment_results.md.
+- official benchmark : MODA-adjudicated Fraud vs Normal cases, group-separated train/calibration/test.
+- hard negatives     : presumed-normal PTT posts from boards never seen in training -> false-positive rate.
+- behavioral tests   : CheckList-style synthetic probes (data/behavioral_tests.json) -> pass rate.
+Fits models/fusion_model*.json (the configuration used by the live pipeline) and writes every published number
+from this one run: docs/experiment_results.json (the single source), docs/experiment_results.md and the
+results block of README.md. tests/test_results_consistency.py fails if any of them is edited by hand.
 """
 import argparse
 from collections import Counter, defaultdict
@@ -255,6 +256,10 @@ FEATURE_ZH = {'text_logit': 'MacBERT 文字分數', 'text_missing': '沒有文�
               'llm_tactic_count': 'LLM 找到的手法數', 'llm_solicitation': 'LLM：招攬讀者', 'llm_addresses_reader': 'LLM：直接要求讀者行動',
               'llm_risk': 'LLM 風險等級', 'llm_benign_act': 'LLM：討論／新聞／分享（只能推向正常）', 'llm_missing': '沒有 LLM 結果',
               'image_known_scam_match': '與已知詐騙圖片相符', 'image_brand_mismatch': '品牌與網址不符', 'image_editor_tag': '圖片編修紀錄'}
+BEHAVIOR_ZH = {'keyword_trap:Normal': '關鍵字陷阱句（含詐騙常見字眼的正常句子，應判正常）',
+               'anti_fraud_awareness:Normal': '反詐騙宣導文（應判正常）', 'scam_positive:Fraud': '典型詐騙句（應判詐騙）',
+               'invariance_ui_padding:Fraud': '詐騙句加上介面文字（結果應不變）',
+               'invariance_ui_padding:Normal': '正常句加上介面文字（結果應不變）'}
 README_START = '<!-- results:start（由 run_experiments.py 自動產生，請勿手動修改） -->'
 README_END = '<!-- results:end -->'
 
@@ -317,7 +322,7 @@ def report_markdown(results):
              f"- 官方判定資料（數發部網路詐騙通報查詢網，時間軸載明主管機關判定）：{data['official']}",
              f"- 困難負樣本（PTT 一般看板文章，推定正常，測試看板訓練時未見過）：{data['hard_negative']}",
              f"- 分組：同一 LINE ID／帳號／連結／相同文字 = 同一組，組不跨 split（共 {data['official_groups']} 組）。",
-             '', '## A. 官方判定測試集（每一列都只在 test split 評估）', '',
+             '', '## 官方判定測試集（每一列都只在 test split 評估）', '',
              '|方法|Precision|Recall|F1 (95% CI)|FPR|Unknown|AUC|ECE|困難負樣本誤報率|',
              '|---|---:|---:|---:|---:|---:|---:|---:|---:|']
     for m in results['methods']:
@@ -369,14 +374,13 @@ def report_markdown(results):
                   f"- 融合分數 ≥ {1 - q['q_fraud']:.1%}：保留「詐騙」",
                   f"- 融合分數 ≤ {q['q_normal']:.1%}：保留「正常」",
                   f"- 只剩「詐騙」→ 疑似詐騙；只剩「正常」→ 未發現明顯詐騙跡象；兩者都保留 → 需要人工查證"]
-    lines += ['', '## D. 行為測試（人工合成句，只測穩健性，不是準確率）', '',
-              '|測試類型:預期|句數|MacBERT 原始通過率|本系統通過率|本系統判錯（非 Unknown）|', '|---|---:|---:|---:|---:|']
+    lines += ['', '## 行為測試（人工合成句，只測穩健性，不是準確率）', '',
+              '|測試類型|句數|MacBERT 原始通過率|本系統通過率|本系統判錯（非 Unknown）|', '|---|---:|---:|---:|---:|']
     for kind, s in (results.get('behavioral') or {}).get('summary', {}).items():
-        lines.append(f"|{kind}|{s['n']}|{pct(s['macbert_raw_pass'])}|{pct(s['system_pass'])}|{pct(s['system_wrong'])}|")
-    domain = ROOT / 'artifacts' / 'experiments' / 'domain_eval.json'
-    if domain.exists():
-        d = json.loads(domain.read_text(encoding='utf-8'))
-        lines += ['', '## C. 網域模組（離線，python eval_domains.py）', '',
+        lines.append(f"|{BEHAVIOR_ZH.get(kind, kind)}|{s['n']}|{pct(s['macbert_raw_pass'])}|{pct(s['system_pass'])}|{pct(s['system_wrong'])}|")
+    d = results.get('domain_eval')
+    if d:
+        lines += ['', '## 網域模組（離線，python eval_domains.py）', '',
                   f"- 仿冒規則（不含清單）在 165 涉詐網域抽樣 {d['fraud_sample']} 筆的偵測率：{pct(d['rules_only_recall'])}；"
                   f"{d['normal_domains']} 個知名正常網域誤報率：{pct(d['rules_only_fpr'])}（含 165 清單：{pct(d['blocklist_fpr'])}）。",
                   f"- 時間切分：只用 {d['newest_month']} 之前的清單，查最新一個月新增網域，命中率 {pct(d['temporal_blocklist_recall_newest_month'])}。"
@@ -568,6 +572,8 @@ def main():
         results['behavioral']['system'] = 'macbert_social + fusion_model_social' if ft_model else 'original + fusion_model'
     out = ROOT / 'artifacts' / 'experiments'
     out.mkdir(parents=True, exist_ok=True)
+    if (out / 'domain_eval.json').exists():  # written by eval_domains.py; kept in results so the report needs no local file
+        results['domain_eval'] = json.loads((out / 'domain_eval.json').read_text(encoding='utf-8'))
     (out / 'results.json').write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding='utf-8')
     # Tracked copy: the single source of truth for README, docs/experiment_results.md and the website metrics.
     (ROOT / 'docs' / 'experiment_results.json').write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding='utf-8')

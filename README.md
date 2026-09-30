@@ -74,7 +74,7 @@
 | 4 | 仿冒網域 | `data/demo/case4_fake_myship_chat.jpg`（假 7-11 賣貨便連結） | 高度疑似詐騙 | 模型先判疑似，連結追蹤的硬證據再升級 |
 | 5 | 需要人工查證 | `data/demo/case5_line_chat.jpg`（自我介紹前後矛盾的 LINE 聊天） | 需要人工查證 | 證據不足時不硬判 |
 
-更多說明：[系統運作說明](docs/system_walkthrough.md)（輸入一個網址後的每一步、網頁每個區塊的意思）；[拒答門檻、分數校準與熱點圖](docs/calibration_and_explanations.md)（conformal 門檻怎麼算，附流程圖）。
+更多說明：[系統運作說明](docs/system_walkthrough.md)（輸入一個網址後的每一步、網頁每個區塊的意思）；[拒答門檻、分數校準與熱點圖](docs/calibration_and_explanations.md)（conformal 門檻怎麼算，附流程圖）；[網站上的各種分數是什麼](docs/model_scores.md)。
 
 ---
 
@@ -207,7 +207,12 @@ python run_pipeline.py --url "https://example.com" --explain        # 另外產�
 
 ## 重新訓練（選用，需要 NVIDIA 顯示卡與 Ollama）
 
-資料集已在 `data/`（官方判定案例、PTT 困難負樣本、圖片雜湊庫、165 清單）。微調以原始版 MacBERT 權重為起點，需放在 `anti_fraud_E3_macbert/`：
+資料集的文字、標籤與切分已在 `data/`（官方判定案例、PTT 困難負樣本、圖片雜湊庫、165 清單）。重新訓練前還需要兩樣沒有上傳的東西：
+
+- **案例圖片**（約 1.1 GB）：執行 `python collect_fraudbuster.py --restore-images` 從官方網站抓回來（約 15～30 分鐘）。少了圖片，只有圖片沒有文字的案例會被略過，結果會和公布的數字不同。
+- **最初版 MacBERT 權重**：微調的起點，放在 `anti_fraud_E3_macbert/`。
+
+接著依序執行：
 
 ```powershell
 python build_dataset.py
@@ -216,6 +221,7 @@ python finetune_macbert.py --batch 16 --max-length 256
 python score_dataset.py rescore --model-path models/macbert_social
 python score_dataset.py llm
 python compare_recipes.py      # 選用：同一份測試集上比較新舊資料取樣方式
+python eval_domains.py          # 選用：網域模組的離線評估
 python run_experiments.py
 ```
 
@@ -232,10 +238,12 @@ python run_experiments.py
 | `account_signals.py`、`llm_evidence.py`、`image_forensics.py`、`link_tracer.py`、`ood.py` | 各項證據 |
 | `fusion_model.py`、`conformal.py`、`risk_assessment.py` | 融合、拒答、結論 |
 | `attribution.py`、`report_explanation.py` | 熱點圖與報告說明 |
-| `collect_*.py`、`build_dataset.py`、`score_dataset.py`、`finetune_macbert.py`、`compare_recipes.py`、`run_experiments.py` | 資料蒐集、訓練與評估 |
+| `collect_*.py`、`build_dataset.py`、`score_dataset.py`、`finetune_macbert.py`、`compare_recipes.py`、`eval_domains.py`、`run_experiments.py` | 資料蒐集、訓練與評估 |
+| `fusion.py`、`evidence.py`、`progress.py` | 主流程用到的小模組（沒有融合模型時的備援規則、證據編號、進度回報） |
+| `calibration.py`、`evaluate.py`、`review_workflow.py`、`train_reviewed.py`、`prepare_165.py`、`report_status.py` | 選用或舊版工具，網站不會用到：分數校準、用自備標註表評估、案例複核與再訓練、整理 165 開放資料、舊介面的訊息文字 |
 | `data/` | 165 清單、資料集、詐騙圖片雜湊庫、示範截圖 |
 | `models/` | 融合模型與分布外偵測參考值（MacBERT 權重另外下載） |
-| `docs/` | 說明文件、實驗結果、流程圖 |
+| `docs/` | 系統運作說明、各種分數的意義、拒答門檻與熱點圖、demo 案例、實驗結果、流程圖 |
 | `tests/`、`scenario_check.py` | 單元測試與端對端自我檢查 |
 
 ## 使用限制

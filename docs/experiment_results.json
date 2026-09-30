@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-29T13:39:26.793303+00:00",
+  "generated_at": "2026-09-30T07:39:36.447056+00:00",
   "alpha": 0.1,
   "macbert_sha256": "49f90dd486e732cc380c881df142cd37d92ecbe75eaa2f1a08624788ee1cb6d2",
   "data": {
@@ -3298,5 +3298,58 @@
     ],
     "synthetic": true,
     "system": "macbert_social + fusion_model_social"
+  },
+  "domain_eval": {
+    "fraud_sample": 2000,
+    "normal_domains": 178,
+    "newest_month": "11508",
+    "newest_month_domains": 2000,
+    "rules_only_recall": 0.004004004004004004,
+    "rules_only_fpr": 0.0,
+    "blocklist_fpr": 0.0,
+    "temporal_blocklist_recall_newest_month": 0.001,
+    "top_tlds_165": [
+      [
+        "shop",
+        30178
+      ],
+      [
+        "com",
+        13301
+      ],
+      [
+        "top",
+        7755
+      ],
+      [
+        "cc",
+        3928
+      ],
+      [
+        "site",
+        3648
+      ],
+      [
+        "xyz",
+        2103
+      ],
+      [
+        "asia",
+        1793
+      ],
+      [
+        "store",
+        1460
+      ],
+      [
+        "online",
+        1179
+      ],
+      [
+        "icu",
+        1174
+      ]
+    ],
+    "note": "Rules target social-platform lookalikes; most 165 domains are generic scam shops/investment sites, so new domains must be judged by page content. Normal list is hand-curated (small)."
   }
 }

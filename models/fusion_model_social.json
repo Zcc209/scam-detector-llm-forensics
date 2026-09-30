@@ -192,7 +192,7 @@
       }
     },
     "macbert_sha256": "49f90dd486e732cc380c881df142cd37d92ecbe75eaa2f1a08624788ee1cb6d2",
-    "generated_at": "2026-09-29T13:39:26.509083+00:00",
+    "generated_at": "2026-09-30T07:39:36.156864+00:00",
     "macbert": "models/macbert_social (fine-tuned on train split)",
     "text_model_sha256": "b059f5c25492dbf19005a9d16175f684e860710c9a8436885714ea49684e4ea8"
   }

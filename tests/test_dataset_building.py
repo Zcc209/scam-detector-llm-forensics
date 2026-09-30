@@ -50,6 +50,27 @@ class DatasetTests(unittest.TestCase):
             with self.subTest(platform=platform):
                 self.assertIn('test', {c['split'] for c in cases if c['platforms'] == [platform]})
 
+    def test_restore_images_downloads_only_missing_files(self):
+        import tempfile
+        from collect_fraudbuster import restore_images
+        with tempfile.TemporaryDirectory() as tmp:
+            kept = Path(tmp) / 'images' / 'a.jpg'
+            kept.parent.mkdir()
+            kept.write_bytes(b'already here')
+            cases = [{'case_id': 'a', 'image_path': str(kept)}, {'case_id': 'b', 'image_path': str(Path(tmp) / 'images' / 'b.jpg')},
+                     {'case_id': 'c', 'image_path': None}]
+            calls = []
+
+            class Crawler:
+                def get(self, url, binary=False):
+                    calls.append(url)
+                    return b'x' * 3000
+
+            self.assertEqual(restore_images(cases, Crawler(), workers=1), 1)
+            self.assertEqual(len(calls), 1)
+            self.assertEqual(kept.read_bytes(), b'already here')
+            self.assertTrue((Path(tmp) / 'images' / 'b.jpg').is_file())
+
     def test_image_only_lines_tolerate_ocr_errors(self):
         text = '限時免費領取熱搜名單，加入官方LINE立即領取'
         self.assertEqual(image_only_lines(['限時免費領取熱搜名單', '加入官方LlNE立即領取', '保證月入十萬'], text), ['保證月入十萬'])

@@ -89,7 +89,7 @@ flowchart TD
 
 ## 二、分數校準（Platt／Isotonic）：選用功能
 
-**和 conformal 的差別**：校準是讓「分數」更接近真實機率（說 80% 就真的有八成是詐騙）；conformal 是決定「什麼時候不下結論」。兩者可以並存，但目前網站**只用 conformal**，融合分數沒有另外做 Platt／Isotonic 校準。融合模型目前的校準誤差（ECE）列在[實驗結果](experiment_results.md)的 A 表。
+**和 conformal 的差別**：校準是讓「分數」更接近真實機率（說 80% 就真的有八成是詐騙）；conformal 是決定「什麼時候不下結論」。兩者可以並存，但目前網站**只用 conformal**，融合分數沒有另外做 Platt／Isotonic 校準。融合模型目前的校準誤差（ECE）列在[實驗結果](experiment_results.md)第一張表的 ECE 欄。
 
 `calibration.py` 保留給需要單獨校準 MacBERT 分數的情況：
 

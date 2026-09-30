@@ -102,6 +102,26 @@ class Crawler:
         return list(dict.fromkeys(re.findall(r"detail\?listType=[A-Z]+&amp;id=([0-9a-f]{24})", self.get(url))))
 
 
+def restore_images(cases, crawler, workers=3):
+    """Download the image of every recorded case whose file is missing, to the path stored in the manifest."""
+    def work(case):
+        path = Path(str(case["image_path"]).replace("\\", "/"))
+        if path.is_file():
+            return 0
+        try:
+            data = crawler.get(IMAGE.format(case["case_id"]), binary=True)
+        except requests.RequestException as error:
+            print(f"{case['case_id']}: {error}", flush=True)
+            return 0
+        if len(data) <= 2000:
+            return 0
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        return 1
+    with ThreadPoolExecutor(workers) as pool:
+        return sum(pool.map(work, [case for case in cases if case.get("image_path")]))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("data/fraudbuster/cases.jsonl"))
@@ -116,6 +136,8 @@ def main():
     parser.add_argument("--fraud-rate", type=int, default=0, help="with --scan-normals, also keep 1/N fraud verdict cards")
     parser.add_argument("--scan-normals", type=int, default=0, metavar="PAGES",
                         help="scan this many 500-card pages of the newest list for 非詐騙 verdicts only")
+    parser.add_argument("--restore-images", action="store_true",
+                        help="only re-download the images of cases already in --output (images are not in the repository)")
     args = parser.parse_args()
     crawler = Crawler(args.cache, args.delay)
     existing = {}
@@ -123,6 +145,9 @@ def main():
         for line in args.output.read_text(encoding="utf-8").splitlines():
             row = json.loads(line)
             existing[row["case_id"]] = row
+    if args.restore_images:
+        print("restored:", restore_images(existing.values(), crawler, args.workers))
+        return
     queries = [("H", ""), ("N", "")] + ([("N", t) for t in FRAUD_TYPES] if args.by_category else [])
     ids = []
     if args.scan_normals:
